@@ -33,7 +33,7 @@ Built as a 2nd-year AI & Data Engineering capstone project, Aegis combines three
 
 ---
 
-## ✨ Features
+##
 
 - 🔍 **Real-time deepfake audio/video detection**
 - 💬 **SMS & chat intent classification** (phishing, social engineering, spam)
