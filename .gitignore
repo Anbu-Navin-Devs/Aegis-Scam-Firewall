@@ -1,0 +1,111 @@
+# ==============================
+# Aegis: The Cognitive Scam Firewall
+# Master .gitignore
+# ==============================
+
+# ──────────────────────────────
+# Python / FastAPI
+# ──────────────────────────────
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Unit test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# ──────────────────────────────
+# Flutter / Android / Dart
+# ──────────────────────────────
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+*.config.dart
+
+# Android
+frontend/android/.gradle/
+frontend/android/app/debug/
+frontend/android/app/profile/
+frontend/android/app/release/
+*.apk
+*.aab
+*.jks
+*.keystore
+local.properties
+
+# iOS (if applicable in the future)
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+
+# ──────────────────────────────
+# IDE / Editor
+# ──────────────────────────────
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ──────────────────────────────
+# Misc
+# ──────────────────────────────
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
