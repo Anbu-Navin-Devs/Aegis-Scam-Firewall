@@ -55,3 +55,48 @@ class IntentResponse(BaseModel):
             }
         }
 
+
+# ---------------------------------------------------------------------------
+# Part 3 — Deepfake Voice Liveness Detection
+# ---------------------------------------------------------------------------
+
+
+class DeepfakeResponse(BaseModel):
+    """
+    Response model for deepfake voice liveness analysis.
+
+    Returns a binary deepfake classification, a confidence score, and a
+    human-readable summary of the audio features that drove the decision.
+    """
+
+    is_deepfake: bool = Field(
+        ...,
+        description="True if the audio is likely AI-generated / deepfake, False if it appears to be a genuine human voice"
+    )
+
+    confidence_score: float = Field(
+        ...,
+        ge=0.0,
+        le=100.0,
+        description="Confidence percentage from 0.0 (certainly real) to 100.0 (certainly deepfake)"
+    )
+
+    analysis_details: str = Field(
+        ...,
+        description="Detailed breakdown of the acoustic features analysed and why the verdict was reached"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "is_deepfake": True,
+                "confidence_score": 78.5,
+                "analysis_details": (
+                    "Spectral flatness is abnormally uniform (0.92) suggesting synthesised speech. "
+                    "Pitch variability is very low (std=4.1 Hz) indicating monotone delivery typical of TTS. "
+                    "Silence ratio is 0.03, unusually low for natural conversation."
+                )
+            }
+        }
+
+

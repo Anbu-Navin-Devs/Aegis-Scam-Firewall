@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import API routers
 from app.api.v1 import analyze
+from app.api.v1 import deepfake
 
 APP_TITLE = "Aegis Scam Firewall API"
 APP_VERSION = "1.0.0"
@@ -38,6 +39,10 @@ def create_app() -> FastAPI:
     # Register API v1 routers
     application.include_router(
         analyze.router,
+        prefix="/api/v1"
+    )
+    application.include_router(
+        deepfake.router,
         prefix="/api/v1"
     )
 
