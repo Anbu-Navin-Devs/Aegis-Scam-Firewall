@@ -1,0 +1,137 @@
+================================================================================
+PREDATORY CONTRACT SAMPLE — FOR AEGIS TESTING ONLY
+This document is intentionally written to contain predatory clauses.
+Do NOT sign. This is a synthetic test asset.
+================================================================================
+
+                        DIGITAL SERVICES SUBSCRIPTION AGREEMENT
+                              QuickCloud Solutions Ltd.
+                                  Version 14.7b
+
+This Agreement is entered into between QuickCloud Solutions Ltd. ("Company")
+and the individual accepting these terms ("User"). By clicking "I Agree" or
+using the Service for more than 5 seconds, you are deemed to have accepted
+ALL terms below in their entirety.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 1 — SERVICE DESCRIPTION
+────────────────────────────────────────────────────────────────────────────────
+
+The Company provides cloud storage, file synchronisation, and AI-powered
+document management tools ("the Service"). Features may be modified,
+restricted, or removed at any time without prior notice.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 2 — PAYMENT TERMS
+────────────────────────────────────────────────────────────────────────────────
+
+2.1 The User agrees to pay the monthly subscription fee of $29.99 ("Base Fee").
+
+2.2 The Company reserves the right to adjust the Base Fee at any time by
+updating these Terms. Continued use of the Service after any price change
+constitutes acceptance of the new fee. The Company is not required to notify
+the User of price changes individually.
+
+2.3 All payments are non-refundable under any circumstances, including but not
+limited to service outages, feature removal, or account termination initiated
+by the Company.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 3 — AUTOMATIC RENEWAL (IMPORTANT — READ CAREFULLY)
+────────────────────────────────────────────────────────────────────────────────
+
+3.1 Your subscription will AUTOMATICALLY RENEW for a period of TWELVE (12)
+months at the then-current annual rate unless the User provides written
+cancellation notice via certified mail to our registered office at least
+NINETY (90) CALENDAR DAYS before the renewal date.
+
+3.2 Email cancellation requests will not be accepted and shall be deemed void.
+
+3.3 Upon renewal, the User waives any right to dispute the renewal charge with
+their financial institution.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 4 — DATA COLLECTION AND SHARING
+────────────────────────────────────────────────────────────────────────────────
+
+4.1 The User grants the Company an irrevocable, perpetual, worldwide, royalty-
+free licence to use, reproduce, modify, distribute, and commercially exploit
+any content uploaded to the Service.
+
+4.2 The Company may share User data, including personally identifiable
+information, usage patterns, and document contents, with "affiliated third
+parties" and "strategic business partners" as defined solely at the Company's
+discretion. The User consents to this sharing by accepting these Terms.
+
+4.3 The Company is not required to notify the User when their data is shared,
+sold, or transferred to third parties.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 5 — LIMITATION OF LIABILITY
+────────────────────────────────────────────────────────────────────────────────
+
+5.1 THE COMPANY SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, INCLUDING LOSS OF DATA, LOSS OF
+PROFITS, OR BUSINESS INTERRUPTION, EVEN IF THE COMPANY HAS BEEN ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGES.
+
+5.2 In no event shall the Company's total liability exceed one US dollar ($1.00),
+regardless of the nature of the claim or the amount paid by the User.
+
+5.3 The User is fully liable for any damage, direct or indirect, caused to the
+Company arising from the User's use or misuse of the Service, including legal
+fees and costs of any litigation.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 6 — MANDATORY ARBITRATION AND CLASS ACTION WAIVER
+────────────────────────────────────────────────────────────────────────────────
+
+6.1 ALL disputes arising from this Agreement shall be resolved exclusively
+through binding individual arbitration. The User WAIVES ANY RIGHT TO A JURY
+TRIAL OR CLASS ACTION PROCEEDING.
+
+6.2 Arbitration shall occur in the Company's home jurisdiction (Cayman Islands)
+at a location selected solely by the Company. All travel, arbitrator, and
+administrative costs shall be borne exclusively by the User.
+
+6.3 The arbitration decision shall be final and non-appealable.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 7 — EARLY TERMINATION PENALTY
+────────────────────────────────────────────────────────────────────────────────
+
+7.1 If the User terminates this Agreement before the end of the contracted term,
+the User shall pay a liquidated damages fee equal to ONE HUNDRED AND FIFTY
+PERCENT (150%) of the remaining subscription fees for the balance of the term.
+
+7.2 This fee is not a penalty but is acknowledged by the parties as a genuine
+pre-estimate of the Company's losses.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 8 — MODIFICATION OF TERMS
+────────────────────────────────────────────────────────────────────────────────
+
+8.1 The Company may modify these Terms at any time without notice. The updated
+Terms will be posted to the Company website. Continued use of the Service after
+posting constitutes acceptance.
+
+8.2 It is the User's sole responsibility to review the Terms regularly.
+Failure to review does not exempt the User from being bound by changes.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 9 — GOVERNING LAW
+────────────────────────────────────────────────────────────────────────────────
+
+9.1 This Agreement is governed by the laws of the Cayman Islands. Any legal
+proceedings must be filed exclusively in the courts of the Cayman Islands,
+at the User's expense.
+
+────────────────────────────────────────────────────────────────────────────────
+ACKNOWLEDGEMENT
+
+By continuing, the User acknowledges they have read, understood, and accepted
+all terms above.
+
+QuickCloud Solutions Ltd.
+[SYNTHETIC DOCUMENT — FOR AEGIS AI TESTING ONLY]
+================================================================================

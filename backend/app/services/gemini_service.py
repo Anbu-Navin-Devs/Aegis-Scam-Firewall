@@ -108,3 +108,125 @@ async def analyze_transcript_intent(transcript: str) -> IntentResponse:
             reason=f"Analysis engine error: {str(e)}"
         )
 
+
+# ---------------------------------------------------------------------------
+# Part 4 — Document / Predatory Clause Detection
+# ---------------------------------------------------------------------------
+
+# Gemini 1.5 Flash supports inline vision (PDF + image) up to 20 MB.
+# We use Flash rather than Pro to minimise latency for document uploads;
+# swap to "gemini-1.5-pro" here if higher recall is needed on complex contracts.
+_document_model = genai.GenerativeModel("gemini-1.5-flash")
+
+DOCUMENT_ANALYSIS_PROMPT = """\
+You are an expert legal analyst and consumer-protection AI specialising in
+detecting predatory, hidden, and unfair clauses inside contracts, terms of
+service, loan agreements, insurance policies, and similar documents.
+
+Your mission: Carefully examine EVERY page of the supplied document.
+Identify clauses that are harmful, deceptive, one-sided, or designed to
+disadvantage the signing party.
+
+**Categories of predatory clauses to flag:**
+1. Hidden auto-renewal or price-escalation mechanisms
+2. Binding mandatory arbitration or class-action waivers
+3. Asymmetric liability (company not liable, consumer fully liable)
+4. Vague or broad data-sharing / data-sale permissions
+5. Unreasonable forfeiture, liquidated damages, or early-termination fees
+6. Unilateral right to modify terms without notice
+7. Clauses that waive statutory consumer rights
+8. Unconscionable penalty or interest-rate provisions
+9. Jurisdiction clauses designed to make dispute resolution impractical
+10. Fine-print terms that contradict headline marketing claims
+
+**RESPONSE FORMAT — strictly valid JSON, no markdown, no commentary:**
+{
+  "risk_level": "<SAFE|LOW|MEDIUM|HIGH|CRITICAL>",
+  "flagged_clauses": [
+    "Exact quoted or faithfully paraphrased clause with section reference"
+  ],
+  "summary": "Plain-English executive summary (3-5 sentences) explaining the verdict and the most critical findings."
+}
+
+**Risk-level definitions:**
+- SAFE     → No problematic clauses; document appears fair and transparent.
+- LOW      → 1-2 minor concerns unlikely to cause significant harm.
+- MEDIUM   → 3-5 questionable clauses that warrant careful reading.
+- HIGH     → Multiple predatory clauses; legal review recommended before signing.
+- CRITICAL → Extremely one-sided or deceptive; do NOT sign without specialist counsel.
+
+Return ONLY the JSON object. Do not include any explanation outside the JSON.\
+"""
+
+
+async def analyze_document(
+    file_bytes: bytes,
+    mime_type: str,
+) -> "DocumentAnalysisResponse":
+    """
+    Analyse a document (PDF, PNG, or JPEG) for predatory legal clauses.
+
+    Sends the raw file bytes to Gemini 1.5 Flash as an inline vision blob
+    so the model can read every page of the document directly.  The model
+    is instructed to return strict JSON matching ``DocumentAnalysisResponse``.
+
+    Args:
+        file_bytes: Raw bytes of the uploaded document.
+        mime_type:  RFC 2046 MIME type string (e.g. ``"application/pdf"``).
+
+    Returns:
+        DocumentAnalysisResponse with ``risk_level``, ``flagged_clauses``,
+        and ``summary``.
+
+    Raises:
+        ValueError: If the Gemini response cannot be parsed as valid JSON.
+        Exception:  If the Gemini API call itself fails.
+    """
+    # Import here to avoid a circular import at module initialisation time.
+    from app.models.schemas import DocumentAnalysisResponse, RiskLevel
+
+    # Build the multipart request: system prompt text + raw file blob.
+    document_part = {
+        "inline_data": {
+            "mime_type": mime_type,
+            "data": file_bytes,
+        }
+    }
+
+    try:
+        response = _document_model.generate_content(
+            [DOCUMENT_ANALYSIS_PROMPT, document_part]
+        )
+
+        response_text = response.text.strip()
+
+        # Strip markdown code fences that Gemini sometimes adds.
+        if response_text.startswith("```json"):
+            response_text = response_text.removeprefix("```json").removesuffix("```").strip()
+        elif response_text.startswith("```"):
+            response_text = response_text.removeprefix("```").removesuffix("```").strip()
+
+        data = json.loads(response_text)
+
+        return DocumentAnalysisResponse(
+            risk_level=RiskLevel(data["risk_level"].upper()),
+            flagged_clauses=data.get("flagged_clauses", []),
+            summary=data["summary"],
+        )
+
+    except json.JSONDecodeError as exc:
+        # Gemini returned non-JSON — surface a safe fallback so the endpoint
+        # does not 500 on a format glitch; the client gets a MEDIUM warning.
+        raw_preview = response.text[:300] if "response" in dir() else "unavailable"
+        return DocumentAnalysisResponse(
+            risk_level=RiskLevel.MEDIUM,
+            flagged_clauses=[],
+            summary=(
+                f"Document analysis completed but the AI returned an unparseable response. "
+                f"Manual review is recommended. (parse error: {exc}; preview: {raw_preview})"
+            ),
+        )
+
+    except Exception as exc:
+        # Re-raise so the router can return a clean 500 with context.
+        raise RuntimeError(f"Gemini document analysis error: {exc}") from exc

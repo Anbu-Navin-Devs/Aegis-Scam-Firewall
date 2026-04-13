@@ -17,15 +17,15 @@ class Settings(BaseSettings):
     # Google Gemini API Configuration
     GEMINI_API_KEY: str
 
+    # PostgreSQL — must use the postgresql+asyncpg:// scheme for async engine.
+    # ⚠️ Override in .env; the default targets a local dev database.
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/aegis"
+
     # Application metadata
     APP_NAME: str = "Aegis Scam Firewall API"
     APP_VERSION: str = "1.0.0"
     ENV: str = "development"
     DEBUG: bool = True
-
-    # Future database/cache configuration
-    # DATABASE_URL: str | None = None
-    # REDIS_URL: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

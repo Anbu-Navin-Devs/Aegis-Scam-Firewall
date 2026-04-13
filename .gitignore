@@ -1,7 +1,7 @@
-# ==============================
+# ──────────────────────────────
 # Aegis: The Cognitive Scam Firewall
 # Master .gitignore
-# ==============================
+# ──────────────────────────────
 
 # ──────────────────────────────
 # Python / FastAPI
@@ -19,10 +19,11 @@ __pycache__/
 *$py.class
 *.pyo
 
-# Environment variables
+# Environment variables — real secrets
 .env
 .env.*
-!.env.example
+!.env.example   # safe placeholder — committed intentionally
+!.env.template  # safe placeholder — committed intentionally
 
 # Distribution / packaging
 dist/
@@ -35,24 +36,43 @@ build/
 htmlcov/
 .pytest_cache/
 
-# mypy
+# mypy / type checkers
 .mypy_cache/
+.ruff_cache/
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
 
 # ──────────────────────────────
+# Database & Cache
+# ──────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# Alembic auto-generated migration files (keep schema.py, not version files in CI)
+# alembic/versions/          # Uncomment if you don't want to commit migrations
+
+# ──────────────────────────────
+# Logs & Runtime Artefacts
+# ──────────────────────────────
+*.log
+logs/
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# ──────────────────────────────
 # Flutter / Android / Dart
 # ──────────────────────────────
 
-# Flutter/Dart
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
-build/
 
 # Generated files
 *.g.dart
@@ -99,13 +119,3 @@ Desktop.ini
 
 # Linux
 *~
-
-# ──────────────────────────────
-# Misc
-# ──────────────────────────────
-*.log
-*.tmp
-*.bak
-*.swp
-*.swo
-

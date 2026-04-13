@@ -5,9 +5,17 @@ Provides cognitive scam detection through AI-powered analysis
 of text transcripts using psychological pressure tactic identification.
 """
 
-from fastapi import APIRouter, HTTPException, status
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.crud.crud_threat import create_threat_log
+from app.db.database import AsyncSessionLocal
 from app.models.schemas import IntentRequest, IntentResponse
 from app.services.gemini_service import analyze_transcript_intent
+
+logger = logging.getLogger(__name__)
 
 # Create router with consistent tagging for API documentation
 router = APIRouter(
@@ -15,6 +23,29 @@ router = APIRouter(
     tags=["Intent Analysis"]
 )
 
+
+# ---------------------------------------------------------------------------
+# Background helper — runs after the HTTP response is sent
+# ---------------------------------------------------------------------------
+
+async def _persist_intent_log(log_data: dict) -> None:
+    """
+    Write an intent-analysis ThreatLog row asynchronously.
+
+    Runs as a FastAPI BackgroundTask so the HTTP response is returned to
+    the Flutter client before the DB round-trip completes.  Any DB error
+    is logged but NOT re-raised (the client has already received its reply).
+    """
+    try:
+        async with AsyncSessionLocal() as db:
+            await create_threat_log(db, log_data)
+    except SQLAlchemyError as exc:
+        logger.error("Failed to persist intent threat log: %s", exc)
+
+
+# ---------------------------------------------------------------------------
+# Endpoint
+# ---------------------------------------------------------------------------
 
 @router.post(
     "/intent",
@@ -38,24 +69,28 @@ router = APIRouter(
     - Detailed reasoning explaining detected psychological tactics
     """
 )
-async def analyze_intent(request: IntentRequest) -> IntentResponse:
+async def analyze_intent(
+    request: IntentRequest,
+    background_tasks: BackgroundTasks,
+) -> IntentResponse:
     """
     Analyze text content for scam indicators using Gemini AI.
 
-    This endpoint leverages Google's Gemini 1.5 Flash model to perform
-    sophisticated intent analysis, identifying psychological manipulation
-    tactics commonly employed in social engineering attacks.
+    After returning the AI verdict to the caller, a BackgroundTask
+    persists the result to the ``threat_logs`` PostgreSQL table without
+    blocking the response.
 
     Args:
-        request: IntentRequest containing the text transcript to analyze
+        request:          IntentRequest containing the text transcript to analyze.
+        background_tasks: FastAPI BackgroundTasks injected by the framework.
 
     Returns:
         IntentResponse: Comprehensive analysis including scam classification,
-                       confidence score, and detailed reasoning
+                       confidence score, and detailed reasoning.
 
     Raises:
-        HTTPException: 400 if transcript is empty or invalid
-        HTTPException: 500 if AI analysis service fails
+        HTTPException: 400 if transcript is empty or invalid.
+        HTTPException: 500 if AI analysis service fails.
     """
     # Validate input
     if not request.transcript or not request.transcript.strip():
@@ -67,6 +102,18 @@ async def analyze_intent(request: IntentRequest) -> IntentResponse:
     try:
         # Call the Gemini service to perform intent analysis
         result = await analyze_transcript_intent(request.transcript)
+
+        # Queue DB persistence — fires after response is sent to client
+        risk_label = "SCAM_DETECTED" if result.is_scam else "CLEAN"
+        background_tasks.add_task(
+            _persist_intent_log,
+            {
+                "module_type": "intent",
+                "risk_level": risk_label,
+                "details_json": result.model_dump(),
+            },
+        )
+
         return result
 
     except Exception as e:

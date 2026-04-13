@@ -209,3 +209,117 @@ async def analyze_voice_liveness(file_bytes: bytes) -> DeepfakeResponse:
         analysis_details=summary,
     )
 
+
+# ---------------------------------------------------------------------------
+# Rolling-window / streaming helper
+# ---------------------------------------------------------------------------
+
+def analyze_audio_chunk(audio_data: np.ndarray, sample_rate: int) -> DeepfakeResponse:
+    """
+    Synchronous heuristic scorer for a pre-decoded audio chunk.
+
+    Designed for use by the WebSocket streaming router, which accumulates
+    raw float32 PCM samples and calls this function each time the rolling
+    window reaches a minimum threshold (e.g. 1-2 seconds of audio).
+    Because librosa's ``pyin`` requires a minimum signal length, chunks
+    shorter than 2048 samples skip pitch analysis gracefully.
+
+    The four feature groups (spectral flatness, pitch stability, silence
+    ratio, ZCR smoothness) are identical to ``analyze_voice_liveness`` so
+    the heuristic thresholds stay consistent across both REST and WebSocket
+    code paths.
+
+    Args:
+        audio_data:  1-D float32 numpy array of normalised PCM samples.
+        sample_rate: Sample rate of the audio (Hz).
+
+    Returns:
+        DeepfakeResponse — same schema as the REST endpoint.
+    """
+    details: list[str] = []
+    score = 0.0
+    duration = len(audio_data) / sample_rate
+
+    # -- Feature A: Spectral Flatness ----------------------------------------
+    mean_flatness = float(np.mean(librosa.feature.spectral_flatness(y=audio_data)))
+    if mean_flatness > _SPECTRAL_FLATNESS_THRESHOLD:
+        contribution = min(
+            25.0,
+            (mean_flatness - _SPECTRAL_FLATNESS_THRESHOLD)
+            / (1.0 - _SPECTRAL_FLATNESS_THRESHOLD)
+            * 25,
+        )
+        score += contribution
+        details.append(
+            f"Spectral flatness high ({mean_flatness:.3f}) → synthetic energy (+{contribution:.1f})."
+        )
+    else:
+        details.append(f"Spectral flatness normal ({mean_flatness:.3f}).")
+
+    # -- Feature B: Pitch Stability ------------------------------------------
+    # pyin needs >= 2048 samples (~0.13 s at 16 kHz); skip if chunk is too short.
+    if len(audio_data) >= 2048:
+        try:
+            f0, voiced_flag, _ = librosa.pyin(
+                audio_data,
+                fmin=librosa.note_to_hz("C2"),
+                fmax=librosa.note_to_hz("C7"),
+                sr=sample_rate,
+            )
+            voiced_f0 = f0[voiced_flag] if voiced_flag is not None else f0[~np.isnan(f0)]
+            if len(voiced_f0) > 0:
+                pitch_std = float(np.std(voiced_f0))
+                if pitch_std < _PITCH_STD_THRESHOLD:
+                    contribution = min(
+                        25.0,
+                        (_PITCH_STD_THRESHOLD - pitch_std) / _PITCH_STD_THRESHOLD * 25,
+                    )
+                    score += contribution
+                    details.append(
+                        f"Pitch std={pitch_std:.1f} Hz (low → TTS +{contribution:.1f})."
+                    )
+                else:
+                    details.append(f"Pitch std={pitch_std:.1f} Hz (healthy).")
+            else:
+                details.append("No voiced frames — too noisy/short for pitch.")
+        except Exception:
+            details.append("Pitch extraction skipped.")
+    else:
+        details.append("Chunk too short for pitch analysis.")
+
+    # -- Feature C: Silence Ratio --------------------------------------------
+    rms = librosa.feature.rms(y=audio_data)[0]
+    silence_ratio = float(np.mean(rms < 0.02))
+    if silence_ratio < _SILENCE_RATIO_THRESHOLD:
+        contribution = min(
+            25.0,
+            (_SILENCE_RATIO_THRESHOLD - silence_ratio) / _SILENCE_RATIO_THRESHOLD * 25,
+        )
+        score += contribution
+        details.append(f"Silence ratio {silence_ratio:.3f} (low → TTS +{contribution:.1f}).")
+    else:
+        details.append(f"Silence ratio {silence_ratio:.3f} (normal).")
+
+    # -- Feature D: Zero-Crossing Rate Smoothness ----------------------------
+    zcr_std = float(np.std(librosa.feature.zero_crossing_rate(y=audio_data)[0]))
+    if zcr_std < _ZCR_STD_THRESHOLD:
+        contribution = min(
+            25.0,
+            (_ZCR_STD_THRESHOLD - zcr_std) / _ZCR_STD_THRESHOLD * 25,
+        )
+        score += contribution
+        details.append(f"ZCR std={zcr_std:.4f} (smooth → vocoder +{contribution:.1f}).")
+    else:
+        details.append(f"ZCR std={zcr_std:.4f} (natural).")
+
+    # -- Final verdict -------------------------------------------------------
+    score = round(min(score, 100.0), 2)
+    summary = (
+        f"[chunk {duration:.2f}s @ {sample_rate} Hz] " + " | ".join(details)
+    )
+
+    return DeepfakeResponse(
+        is_deepfake=score >= 50.0,
+        confidence_score=score,
+        analysis_details=summary,
+    )
