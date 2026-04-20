@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/network/api_provider.dart';
-import '../../core/network/api_service.dart';
-import '../../models/intent_response.dart';
+import '../../../core/network/api_provider.dart';
+import '../../../core/network/api_service.dart';
+import '../../../models/intent_response.dart';
 
 final intentProvider = StateNotifierProvider<IntentNotifier, AsyncValue<IntentResponse?>>((ref) {
   return IntentNotifier(ref.watch(apiServiceProvider));

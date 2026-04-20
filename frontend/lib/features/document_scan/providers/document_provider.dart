@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/network/api_provider.dart';
-import '../../core/network/api_service.dart';
-import '../../models/document_scan_response.dart';
+import '../../../core/network/api_provider.dart';
+import '../../../core/network/api_service.dart';
+import '../../../models/document_scan_response.dart';
 
 final documentProvider = StateNotifierProvider<DocumentNotifier, AsyncValue<DocumentScanResponse?>>((ref) {
   return DocumentNotifier(ref.watch(apiServiceProvider));

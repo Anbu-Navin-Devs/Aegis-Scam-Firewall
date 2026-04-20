@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/network/live_audio_service.dart';
-import '../../models/deepfake_response.dart';
+import '../../../core/network/live_audio_service.dart';
+import '../../../models/deepfake_response.dart';
 
 // AutoDispose so it cleans up when the screen is closed
 final liveAudioServiceProvider = Provider.autoDispose<LiveAudioService>((ref) {
