@@ -1,16 +1,19 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class DocumentScanResponse {
+  final String riskLevel;
+  final List<String> flaggedClauses;
+  final String summary;
 
-part 'document_scan_response.freezed.dart';
-part 'document_scan_response.g.dart';
+  DocumentScanResponse({
+    required this.riskLevel,
+    required this.flaggedClauses,
+    required this.summary,
+  });
 
-@freezed
-class DocumentScanResponse with _$DocumentScanResponse {
-  const factory DocumentScanResponse({
-    @JsonKey(name: 'risk_level') required String riskLevel,
-    @JsonKey(name: 'flagged_clauses') required List<String> flaggedClauses,
-    required String summary,
-  }) = _DocumentScanResponse;
-
-  factory DocumentScanResponse.fromJson(Map<String, dynamic> json) =>
-      _$DocumentScanResponseFromJson(json);
+  factory DocumentScanResponse.fromJson(Map<String, dynamic> json) {
+    return DocumentScanResponse(
+      riskLevel: json['risk_level'] as String? ?? 'Unknown',
+      flaggedClauses: List<String>.from(json['flagged_clauses'] ?? []),
+      summary: json['summary'] as String? ?? 'No summary provided',
+    );
+  }
 }

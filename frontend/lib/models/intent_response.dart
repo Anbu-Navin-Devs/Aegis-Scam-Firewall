@@ -1,16 +1,19 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class IntentResponse {
+  final bool isScam;
+  final int scamScore;
+  final String reason;
 
-part 'intent_response.freezed.dart';
-part 'intent_response.g.dart';
+  IntentResponse({
+    required this.isScam,
+    required this.scamScore,
+    required this.reason,
+  });
 
-@freezed
-class IntentResponse with _$IntentResponse {
-  const factory IntentResponse({
-    @JsonKey(name: 'is_scam') required bool isScam,
-    @JsonKey(name: 'scam_score') required int scamScore,
-    required String reason,
-  }) = _IntentResponse;
-
-  factory IntentResponse.fromJson(Map<String, dynamic> json) =>
-      _$IntentResponseFromJson(json);
+  factory IntentResponse.fromJson(Map<String, dynamic> json) {
+    return IntentResponse(
+      isScam: json['is_scam'] as bool? ?? false,
+      scamScore: json['scam_score'] as int? ?? 0,
+      reason: json['reason'] as String? ?? '',
+    );
+  }
 }

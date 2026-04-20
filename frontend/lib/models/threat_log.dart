@@ -1,17 +1,22 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class ThreatLog {
+  final String id;
+  final String timestamp;
+  final String threatType;
+  final String details;
 
-part 'threat_log.freezed.dart';
-part 'threat_log.g.dart';
+  ThreatLog({
+    required this.id,
+    required this.timestamp,
+    required this.threatType,
+    required this.details,
+  });
 
-@freezed
-class ThreatLog with _$ThreatLog {
-  const factory ThreatLog({
-    required String id,
-    required String timestamp,
-    @JsonKey(name: 'threat_type') required String threatType,
-    required String details,
-  }) = _ThreatLog;
-
-  factory ThreatLog.fromJson(Map<String, dynamic> json) =>
-      _$ThreatLogFromJson(json);
+  factory ThreatLog.fromJson(Map<String, dynamic> json) {
+    return ThreatLog(
+      id: json['id'] as String? ?? 'Unknown',
+      timestamp: json['timestamp'] as String? ?? 'Unknown',
+      threatType: json['threat_type'] as String? ?? 'Unknown',
+      details: json['details'] as String? ?? 'No details',
+    );
+  }
 }

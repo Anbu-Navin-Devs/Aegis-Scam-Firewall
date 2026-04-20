@@ -24,7 +24,7 @@ class LiveAudioService {
         Uri.parse('${AppConfig.wsUrl}${ApiEndpoints.liveAudioStream}')
       );
       
-      // Handshake immediately
+      // Handshake immediately per backend protocol
       _channel!.sink.add(jsonEncode({'sample_rate': 16000}));
 
       _channel!.stream.listen(
@@ -62,7 +62,7 @@ class LiveAudioService {
 
   void _scheduleReconnect() {
     if (_reconnectTimer?.isActive ?? false) return;
-    print('Reconnecting in 3 seconds...');
+    print('Reconnecting to Audio Subsystem in 3 seconds...');
     _reconnectTimer = Timer(const Duration(seconds: 3), () {
       connect();
     });

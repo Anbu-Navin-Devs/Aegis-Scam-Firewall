@@ -47,7 +47,14 @@ class ApiService {
     );
     
     _handleErrors(response);
-    final List<dynamic> data = jsonDecode(response.body);
-    return data.map((json) => ThreatLog.fromJson(json)).toList();
+    final data = jsonDecode(response.body);
+    
+    if (data is List) {
+      return data.map((json) => ThreatLog.fromJson(json as Map<String, dynamic>)).toList();
+    } else if (data is Map<String, dynamic> && data['data'] != null) {
+      return (data['data'] as List).map((json) => ThreatLog.fromJson(json as Map<String, dynamic>)).toList();
+    }
+    
+    return [];
   }
 }
