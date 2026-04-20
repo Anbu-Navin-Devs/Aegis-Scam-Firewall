@@ -54,8 +54,7 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildFeatureCard(BuildContext context, {required String title, required IconData icon, required Color color, required String route}) {
     return InkWell(
       onTap: () {
-        // We will navigate here once routes are attached
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Navigating to $title...')));
+        context.push(route);
       },
       child: Card(
         elevation: 4,

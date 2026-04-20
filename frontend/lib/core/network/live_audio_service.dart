@@ -9,18 +9,35 @@ import '../constants/api_endpoints.dart';
 class LiveAudioService {
   WebSocketChannel? _channel;
   final _deepfakeStreamController = StreamController<DeepfakeResponse>.broadcast();
+  bool _isConnecting = false;
+  Timer? _reconnectTimer;
 
   Stream<DeepfakeResponse> get threatStream => _deepfakeStreamController.stream;
 
   void connect() {
-    _channel = WebSocketChannel.connect(
-      Uri.parse('${AppConfig.wsUrl}${ApiEndpoints.liveAudioStream}')
-    );
-    
-    // Handshake
-    _channel!.sink.add(jsonEncode({'sample_rate': 16000}));
+    if (_isConnecting) return;
+    _isConnecting = true;
+    _reconnectTimer?.cancel();
 
-    _channel!.stream.listen(_onDataReceived, onError: _onError, onDone: _onDone);
+    try {
+      _channel = WebSocketChannel.connect(
+        Uri.parse('${AppConfig.wsUrl}${ApiEndpoints.liveAudioStream}')
+      );
+      
+      // Handshake immediately
+      _channel!.sink.add(jsonEncode({'sample_rate': 16000}));
+
+      _channel!.stream.listen(
+        _onDataReceived, 
+        onError: _onError, 
+        onDone: _onDone,
+        cancelOnError: false,
+      );
+    } catch (e) {
+      _onError(e);
+    } finally {
+      _isConnecting = false;
+    }
   }
 
   void _onDataReceived(dynamic data) {
@@ -35,10 +52,20 @@ class LiveAudioService {
 
   void _onError(error) {
     print('WebSocket error: $error');
+    _scheduleReconnect();
   }
 
   void _onDone() {
     print('WebSocket closed');
+    _scheduleReconnect();
+  }
+
+  void _scheduleReconnect() {
+    if (_reconnectTimer?.isActive ?? false) return;
+    print('Reconnecting in 3 seconds...');
+    _reconnectTimer = Timer(const Duration(seconds: 3), () {
+      connect();
+    });
   }
 
   void streamAudio(Float32List audioBytes) {
@@ -48,7 +75,12 @@ class LiveAudioService {
   }
 
   void disconnect() {
+    _reconnectTimer?.cancel();
     _channel?.sink.close();
+  }
+
+  void dispose() {
+    disconnect();
     _deepfakeStreamController.close();
   }
 }
