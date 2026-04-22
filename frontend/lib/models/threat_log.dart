@@ -1,22 +1,25 @@
 class ThreatLog {
   final String id;
   final String timestamp;
-  final String threatType;
-  final String details;
+  final String moduleType;
+  final String riskLevel;
+  final Map<String, dynamic> detailsJson;
 
   ThreatLog({
     required this.id,
     required this.timestamp,
-    required this.threatType,
-    required this.details,
+    required this.moduleType,
+    required this.riskLevel,
+    required this.detailsJson,
   });
 
   factory ThreatLog.fromJson(Map<String, dynamic> json) {
     return ThreatLog(
       id: json['id'] as String? ?? 'Unknown',
       timestamp: json['timestamp'] as String? ?? 'Unknown',
-      threatType: json['threat_type'] as String? ?? 'Unknown',
-      details: json['details'] as String? ?? 'No details',
+      moduleType: json['module_type'] as String? ?? 'Unknown',
+      riskLevel: json['risk_level'] as String? ?? 'Unknown',
+      detailsJson: json['details_json'] as Map<String, dynamic>? ?? {},
     );
   }
 }
