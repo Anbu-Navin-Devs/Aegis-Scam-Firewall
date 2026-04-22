@@ -1,82 +1,53 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../models/deepfake_response.dart';
-import '../config/app_config.dart';
-import '../constants/api_endpoints.dart';
 
+/// MOCK MODE: WebSocket backend is offline.
+/// This service simulates live deepfake analysis results locally.
+/// Swap back to the real WebSocket implementation when backend is reachable.
 class LiveAudioService {
-  WebSocketChannel? _channel;
   final _deepfakeStreamController = StreamController<DeepfakeResponse>.broadcast();
-  bool _isConnecting = false;
-  Timer? _reconnectTimer;
+  Timer? _mockTimer;
+  int _tick = 0;
 
   Stream<DeepfakeResponse> get threatStream => _deepfakeStreamController.stream;
 
   void connect() {
-    if (_isConnecting) return;
-    _isConnecting = true;
-    _reconnectTimer?.cancel();
-
-    try {
-      _channel = WebSocketChannel.connect(
-        Uri.parse('${AppConfig.wsUrl}${ApiEndpoints.liveAudioStream}')
-      );
-      
-      // Handshake immediately per backend protocol
-      _channel!.sink.add(jsonEncode({'sample_rate': 16000}));
-
-      _channel!.stream.listen(
-        _onDataReceived, 
-        onError: _onError, 
-        onDone: _onDone,
-        cancelOnError: false,
-      );
-    } catch (e) {
-      _onError(e);
-    } finally {
-      _isConnecting = false;
-    }
-  }
-
-  void _onDataReceived(dynamic data) {
-    try {
-      final decoded = jsonDecode(data as String);
-      final response = DeepfakeResponse.fromJson(decoded);
-      _deepfakeStreamController.add(response);
-    } catch (e) {
-      print('WebSocket parsing error: $e');
-    }
-  }
-
-  void _onError(error) {
-    print('WebSocket error: $error');
-    _scheduleReconnect();
-  }
-
-  void _onDone() {
-    print('WebSocket closed');
-    _scheduleReconnect();
-  }
-
-  void _scheduleReconnect() {
-    if (_reconnectTimer?.isActive ?? false) return;
-    print('Reconnecting to Audio Subsystem in 3 seconds...');
-    _reconnectTimer = Timer(const Duration(seconds: 3), () {
-      connect();
+    _mockTimer?.cancel();
+    // Emit a new mock result every 3 seconds to simulate live analysis
+    _mockTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _emitMockResponse();
     });
+    // Emit first result immediately so the screen doesn't stay blank
+    Future.delayed(const Duration(milliseconds: 800), _emitMockResponse);
+  }
+
+  void _emitMockResponse() {
+    _tick++;
+    // Alternate between clean and deepfake to simulate a live feed
+    final isDeepfake = _tick % 3 == 0; // Every 3rd tick is a deepfake
+
+    final response = DeepfakeResponse(
+      timestamp: DateTime.now().toIso8601String(),
+      isSynthetic: isDeepfake,
+      confidenceScore: isDeepfake ? 0.885 : 0.12,
+      flags: isDeepfake
+          ? ['SPECTRAL_FLATNESS_ANOMALY', 'PITCH_STABILITY_UNIFORM', 'NO_BREATHING_PAUSES']
+          : [],
+    );
+
+    if (!_deepfakeStreamController.isClosed) {
+      _deepfakeStreamController.add(response);
+    }
   }
 
   void streamAudio(Float32List audioBytes) {
-    if (_channel != null && _channel!.closeCode == null) {
-      _channel!.sink.add(audioBytes.buffer.asUint8List());
-    }
+    // No-op in mock mode
   }
 
   void disconnect() {
-    _reconnectTimer?.cancel();
-    _channel?.sink.close();
+    _mockTimer?.cancel();
+    _mockTimer = null;
   }
 
   void dispose() {
