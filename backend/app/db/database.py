@@ -90,9 +90,12 @@ async def init_db() -> None:
     ``create_all`` to keep schema changes auditable and reversible.
     """
     logger.info("Initialising database schema…")
-    async with engine.begin() as conn:
-        # Import models here to ensure they are registered on Base.metadata
-        # before create_all is called.
-        from app.models import db_models  # noqa: F401  (side-effect import)
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database schema ready.")
+    try:
+        async with engine.begin() as conn:
+            # Import models here to ensure they are registered on Base.metadata
+            # before create_all is called.
+            from app.models import db_models  # noqa: F401  (side-effect import)
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database schema ready.")
+    except Exception as e:
+        logger.warning(f"Database connection failed: {e}. The app will run, but threat logs will not be persisted.")
