@@ -73,13 +73,13 @@ class _ModernFeatureCardState extends State<ModernFeatureCard> {
                   ),
                 ],
         ),
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top: Icon
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isDark 
@@ -89,7 +89,7 @@ class _ModernFeatureCardState extends State<ModernFeatureCard> {
               child: Icon(
                 widget.icon,
                 color: widget.accentColor,
-                size: 28,
+                size: 24,
               ),
             ),
             const Spacer(),
@@ -98,21 +98,23 @@ class _ModernFeatureCardState extends State<ModernFeatureCard> {
               widget.title,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 16,
+                fontSize: 15,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              widget.description,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-                height: 1.3,
+            Flexible(
+              child: Text(
+                widget.description,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade500,
+                  height: 1.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             // Bottom Right: Arrow CTA
             Align(
               alignment: Alignment.bottomRight,
