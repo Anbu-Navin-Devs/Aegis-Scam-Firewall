@@ -89,12 +89,12 @@ if (response.statusCode == 422) {
 
 ### ❌ 500 Internal Server Error — Backend / AI Failure
 
-**Cause:** Gemini API timeout, unexpected exception in a service function, or database failure on a synchronous path.
+**Cause:** NVIDIA NIM API timeout, unexpected exception in a service function, or database failure on a synchronous path.
 
 | Common trigger | `detail` prefix |
 |---|---|
-| Gemini API timeout or quota exceeded | `"Intent analysis failed: ..."` |
-| Gemini document vision error | `"Document analysis failed: ..."` |
+| NVIDIA API timeout or quota exceeded | `"Intent analysis failed: ..."` |
+| NVIDIA document vision error | `"Document analysis failed: ..."` |
 | Audio analysis crash | `"Audio analysis failed: ..."` |
 
 **Flutter UI Action:**

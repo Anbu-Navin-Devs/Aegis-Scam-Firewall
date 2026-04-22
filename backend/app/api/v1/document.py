@@ -1,7 +1,7 @@
 """
 Document Analysis API endpoint.
 
-Accepts PDF, PNG, or JPEG uploads and uses Gemini Vision to detect
+Accepts PDF, PNG, or JPEG uploads and uses NVIDIA Llama Vision to detect
 predatory, hidden, or unfair legal clauses inside the document.
 
 Usage
@@ -23,7 +23,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.crud.crud_threat import create_threat_log
 from app.db.database import AsyncSessionLocal
 from app.models.schemas import DocumentAnalysisResponse
-from app.services.gemini_service import analyze_document
+from app.services.nvidia_service import analyze_document
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +32,11 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # 20 MB — large enough for a multi-page contract scan, small enough to stay
-# within Gemini's inline data limit without Base64 overhead issues.
+# within NVIDIA's inline data limit without Base64 overhead issues.
 _MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 
 # Maps accepted content-type headers to the MIME type string expected by the
-# Gemini SDK.  The SDK requires the exact RFC 2046 MIME type.
+# NVIDIA NIM SDK.  The SDK requires the exact RFC 2046 MIME type.
 _ACCEPTED_MIME_TYPES: dict[str, str] = {
     "application/pdf":    "application/pdf",
     "image/png":          "image/png",
@@ -87,7 +87,7 @@ async def _persist_document_log(log_data: dict) -> None:
     summary="Scan a Document for Predatory Clauses",
     description="""
 Upload a **PDF, PNG, or JPEG** document (max 20 MB) to detect predatory,
-hidden, or legally unfair clauses using Gemini Vision AI.
+hidden, or legally unfair clauses using NVIDIA Llama Vision AI.
 
 **Detection focus:**
 - Hidden auto-renewal or cancellation penalties
@@ -158,7 +158,7 @@ async def scan_document(
             ),
         )
 
-    # -- Gemini analysis -----------------------------------------------------
+    # -- NVIDIA analysis -----------------------------------------------------
     try:
         result = await analyze_document(file_bytes, mime_type)
 

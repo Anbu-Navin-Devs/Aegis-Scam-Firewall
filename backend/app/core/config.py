@@ -4,6 +4,11 @@ Loads environment variables from .env file for secure credential management.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+from pathlib import Path
+
+# Calculate the root backend directory based on this file's location
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
@@ -14,8 +19,8 @@ class Settings(BaseSettings):
     in a .env file that is excluded from version control.
     """
 
-    # Google Gemini API Configuration
-    GEMINI_API_KEY: str
+    # NVIDIA NIM API Configuration
+    NVIDIA_API_KEY: str
 
     # PostgreSQL — must use the postgresql+asyncpg:// scheme for async engine.
     # ⚠️ Override in .env; the default targets a local dev database.
@@ -28,7 +33,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(BASE_DIR / ".env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"

@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.crud.crud_threat import create_threat_log
 from app.db.database import AsyncSessionLocal
 from app.models.schemas import IntentRequest, IntentResponse
-from app.services.gemini_service import analyze_transcript_intent
+from app.services.nvidia_service import analyze_transcript_intent
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ async def analyze_intent(
     background_tasks: BackgroundTasks,
 ) -> IntentResponse:
     """
-    Analyze text content for scam indicators using Gemini AI.
+    Analyze text content for scam indicators using NVIDIA NIM (Llama 3.3).
 
     After returning the AI verdict to the caller, a BackgroundTask
     persists the result to the ``threat_logs`` PostgreSQL table without
@@ -100,7 +100,7 @@ async def analyze_intent(
         )
 
     try:
-        # Call the Gemini service to perform intent analysis
+        # Call the NVIDIA NIM service to perform intent analysis
         result = await analyze_transcript_intent(request.transcript)
 
         # Queue DB persistence — fires after response is sent to client

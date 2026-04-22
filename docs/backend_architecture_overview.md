@@ -14,19 +14,27 @@ backend/
 │   ├── api/
 │   │   └── v1/
 │   │       ├── analyze.py        # Intent analysis endpoints
-│   │       └── deepfake.py       # Audio analysis endpoints
-│   ├── core/                     # Configuration & dependencies
+│   │       ├── deepfake.py       # Audio deepfake detection endpoints
+│   │       ├── document.py       # Document/PDF scanning endpoints
+│   │       ├── history.py        # Threat history log endpoints
+│   │       └── live_audio.py     # Real-time WebSocket audio stream
+│   ├── core/
+│   │   └── config.py             # Pydantic Settings (.env loader)
+│   ├── crud/
+│   │   └── crud_threat.py        # Database CRUD operations
+│   ├── db/
+│   │   └── database.py           # Async SQLAlchemy engine & session
 │   ├── models/
+│   │   ├── db_models.py          # SQLAlchemy ORM models
 │   │   └── schemas.py            # Pydantic validation schemas
 │   ├── services/
 │   │   ├── audio_service.py      # Core audio feature extraction
-│   │   └── gemini_service.py     # LLM integration logic
+│   │   └── nvidia_service.py     # NVIDIA NIM LLM integration
 │   └── main.py                   # FastAPI app entry point
-├── tests/                        # Automated testing suite
+├── .env                          # Environment variables (git-ignored)
 ├── .env.example                  # Environment template
-├── COMMANDS.md                   # Dev workflow documentation
 ├── README.md                     # Backend-specific readme
-└── requirements.txt              # System dependencies
+└── requirements.txt              # Python dependencies
 ```
 
 ---
@@ -35,29 +43,49 @@ backend/
 
 A summary of exactly what the existing Python modules are doing:
 
-- **`main.py`**: The heart of the application. It initializes the FastAPI instance, configures global CORS middleware, creates a `/health` endpoint for uptime monitoring, and registers all `/api/v1` routers.
-- **`api/v1/analyze.py`**: Exposes the REST routes receiving transcription text (from SMS or calls) and passes them to the NLP engine to determine if the message is a scam.
+- **`main.py`**: The heart of the application. It initializes the FastAPI instance, configures global CORS middleware, creates a `/health` endpoint for uptime monitoring, and registers all `/api/v1` routers. Uses async lifespan for DB schema creation on startup.
+- **`api/v1/analyze.py`**: Exposes the REST route receiving transcription text (from SMS or calls) and passes them to the NVIDIA NIM Llama 3.3 engine to determine if the message is a scam.
 - **`api/v1/deepfake.py`**: Exposes the REST routes responsible for receiving audio samples and passing them into the audio analysis pipeline.
-- **`models/schemas.py`**: Defines strict Pydantic objects (`IntentRequest`, `IntentResponse`, `DeepfakeResponse`). These ensure that requests from the Flutter app are strictly typed (e.g., rejecting strings where floats belong) and automatically generate the Swagger UI documentation.
+- **`api/v1/document.py`**: Handles PDF/image uploads for predatory clause detection. Converts PDFs to images via PyMuPDF for vision-based analysis.
+- **`api/v1/history.py`**: Provides GET endpoints for querying persisted threat logs from the database.
+- **`api/v1/live_audio.py`**: WebSocket endpoint for real-time audio streaming and deepfake detection during live calls.
+- **`models/schemas.py`**: Defines strict Pydantic objects (`IntentRequest`, `IntentResponse`, `DeepfakeResponse`, `DocumentAnalysisResponse`). These ensure that requests from the Flutter app are strictly typed and automatically generate the Swagger UI documentation.
 - **`services/audio_service.py`**: Contains the mathematical and ML logic for analyzing audio liveness (extracting spectral flatness, silence ratios, and pitch variations) to detect text-to-speech synthesis.
-- **`services/gemini_service.py`**: Wraps the LLM (Google Gemini) SDK to power the NLP intent analysis engine, processing transcripts to detect high-pressure psychology and social engineering.
+- **`services/nvidia_service.py`**: Wraps the NVIDIA NIM API (via OpenAI-compatible client) to power both the NLP intent analysis engine (Llama 3.3 70B) and the document vision analysis (Llama 3.2 11B Vision).
 
 ---
 
-## 🌉 The "Integration Gap" (Missing Components)
+## 🌉 Integration Status
 
-To fully connect this backend to the Flutter frontend and achieve production status, the following gaps must be resolved:
+### ✅ Completed
+1. **WebSocket Integration for Real-Time Audio** — `live_audio.py` provides a WebSocket endpoint for continuous audio chunk streaming.
+2. **Data Persistence (ORM)** — SQLAlchemy async models and CRUD layer implemented for threat log persistence.
+3. **Document Scanning** — PDF-to-image conversion via PyMuPDF with vision-model analysis for predatory clause detection.
+4. **NVIDIA NIM Migration** — Full migration from Google Gemini to NVIDIA NIM (Llama 3.3 + Llama 3.2 Vision).
 
-1. **WebSocket Integration for Real-Time Audio:** Deepfake analysis currently uses REST. For live calls, the frontend needs a WebSocket endpoint (`ws://.../api/v1/stream`) to send continuous audio chunks without the overhead of HTTP headers.
-2. **CORS Hardening:** In `main.py`, CORS is currently set to `allow_origins=["*"]`. This must be restricted to the deployed Flutter web domains or explicitly configured for the mobile apps to prevent API abuse.
-3. **Unified Threat Report Endpoint:** Currently, schemas only exist for isolated `Intent` and `Deepfake` responses. A unified aggregation endpoint is needed to combine these into an overarching threat profile.
-4. **Data Persistence (ORM):** The `models` directory only contains API schemas. SQLAlchemy models and an async database engine are required to log threat events to PostgreSQL as detailed in the architecture.
+### ⚠️ Known Limitations
+1. **CORS Policy** — Currently set to `allow_origins=["*"]` for development. Must be restricted for production.
+2. **Database** — Requires a running PostgreSQL instance. Background task logging will silently fail without one.
+
+---
+
+## 📡 Available API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | System health check |
+| `GET` | `/docs` | Interactive Swagger UI |
+| `POST` | `/api/v1/analyze/intent` | Scam intent analysis |
+| `POST` | `/api/v1/deepfake/analyze` | Audio deepfake detection |
+| `POST` | `/api/v1/document/scan` | Document/PDF scanning |
+| `GET` | `/api/v1/history/logs` | Threat history logs |
+| `WS` | `/api/v1/live-audio/stream` | Real-time audio WebSocket |
 
 ---
 
 ## 🤝 Developer Contract (Response JSON)
 
-The following JSON schema represents the target "Developer Contract". This is the exact payload the FastAPI backend will eventually send to the Flutter frontend when querying a combined **Threat Report**. 
+The following JSON schema represents the target "Developer Contract". This is the exact payload the FastAPI backend sends to the Flutter frontend when querying a combined **Threat Report**.
 
 ```json
 {
