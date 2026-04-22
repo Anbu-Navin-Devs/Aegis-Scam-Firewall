@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/modern_feature_card.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -9,64 +11,46 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aegis Scam Firewall', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: GridView.count(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
+        childAspectRatio: 0.85, // Adjust card height
         children: [
-          _buildFeatureCard(
-            context,
+          ModernFeatureCard(
             title: 'Intent Analysis',
-            icon: Icons.text_snippet,
-            color: Colors.blue,
-            route: '/intent', // Route Placeholder
+            description: 'Analyze messages and detect malicious intent.',
+            icon: Icons.text_snippet_rounded,
+            accentColor: AppTheme.mBlue,
+            onTap: () => context.push('/intent'),
           ),
-          _buildFeatureCard(
-            context,
+          ModernFeatureCard(
             title: 'Document Scan',
-            icon: Icons.document_scanner,
-            color: Colors.orange,
-            route: '/scan',  // Route Placeholder
+            description: 'Scan contracts and PDFs for extreme clauses.',
+            icon: Icons.document_scanner_rounded,
+            accentColor: AppTheme.mOrange,
+            onTap: () => context.push('/scan'),
           ),
-          _buildFeatureCard(
-            context,
+          ModernFeatureCard(
             title: 'Live Audio Monitor',
-            icon: Icons.mic,
-            color: Colors.redAccent,
-            route: '/live',  // Route Placeholder
+            description: 'Detect deepfakes and AI voice synthesis.',
+            icon: Icons.mic_rounded,
+            accentColor: AppTheme.mRed,
+            onTap: () => context.push('/live'),
           ),
-          _buildFeatureCard(
-            context,
+          ModernFeatureCard(
             title: 'Threat History',
-            icon: Icons.history,
-            color: Colors.teal,
-            route: '/history', // Route Placeholder
+            description: 'Review recent AI threat analysis logs.',
+            icon: Icons.history_rounded,
+            accentColor: AppTheme.mGreen,
+            onTap: () => context.push('/history'),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(BuildContext context, {required String title, required IconData icon, required Color color, required String route}) {
-    return InkWell(
-      onTap: () {
-        context.push(route);
-      },
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 50, color: color),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-          ],
-        ),
       ),
     );
   }

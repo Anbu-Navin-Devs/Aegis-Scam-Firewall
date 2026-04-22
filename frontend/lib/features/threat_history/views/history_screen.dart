@@ -41,8 +41,8 @@ class HistoryScreen extends ConsumerWidget {
                   backgroundColor: Colors.red.shade100,
                   child: const Icon(Icons.security, color: Colors.red),
                 ),
-                title: Text(log.threatType, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(log.details),
+                title: Text('${log.moduleType.toUpperCase()} - ${log.riskLevel}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(log.detailsJson.toString()),
                 trailing: Text(
                   log.timestamp.length > 10 ? log.timestamp.substring(0, 10) : log.timestamp, 
                   style: const TextStyle(fontSize: 12),
