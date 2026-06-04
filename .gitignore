@@ -81,10 +81,10 @@ logs/
 *.config.dart
 
 # Android
-frontend/android/.gradle/
-frontend/android/app/debug/
-frontend/android/app/profile/
-frontend/android/app/release/
+frontend/.gradle/
+frontend/build/
+frontend/app/build/
+frontend/local.properties
 *.apk
 *.aab
 *.jks

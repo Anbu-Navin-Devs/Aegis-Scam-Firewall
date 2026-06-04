@@ -96,61 +96,32 @@ def main():
         print("❌ ERROR: 'frontend' folder not found. Are you running this from the project root?")
         sys.exit(1)
 
-    print("\n📦 Step 3: Ensuring Flutter is Installed...")
-    
-    flutter_cmd = "flutter"
-    try:
-        subprocess.run(["flutter", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("✅ Flutter is already installed globally.")
-    except FileNotFoundError:
-        print("⚠️ Flutter not found in PATH. Setting it up on C:\\ for global use...")
-        flutter_sdk_dir = "C:\\flutter_sdk"
-        flutter_bat = os.path.join(flutter_sdk_dir, "flutter", "bin", "flutter.bat")
-        
-        if not os.path.exists(flutter_sdk_dir):
-            import urllib.request
-            import zipfile
-            
-            try:
-                os.makedirs(flutter_sdk_dir, exist_ok=True)
-            except PermissionError:
-                print("❌ ERROR: Permission denied creating C:\\flutter_sdk. Please run terminal as Administrator!")
-                sys.exit(1)
+    print("\n📦 Step 3: Checking Gradle Wrapper...")
+    gradlew_bat = os.path.join(frontend_dir, "gradlew.bat")
+    if not os.path.exists(gradlew_bat):
+        print("❌ ERROR: 'gradlew.bat' not found in frontend directory.")
+        sys.exit(1)
+    print("✅ Gradle Wrapper found.")
 
-            zip_path = os.path.join(flutter_sdk_dir, "flutter.zip")
-            
-            print("\n📥 Downloading Flutter SDK to C:\\ (this is faster!)...")
-            flutter_url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.24.3-stable.zip"
-            
-            def download_progress(count, block_size, total_size):
-                percent = int(count * block_size * 100 / total_size)
-                sys.stdout.write(f"\rDownloading... {percent}%")
-                sys.stdout.flush()
-
-            urllib.request.urlretrieve(flutter_url, zip_path, reporthook=download_progress)
-            print("\n✅ Download complete!")
-            
-            print("📦 Extracting Flutter SDK to C:\\...")
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(flutter_sdk_dir)
-            
-            print("🧹 Cleaning up zip file...")
-            os.remove(zip_path)
-            
-            print("⏳ Initializing Flutter (setting up core tools)...")
-            subprocess.run(f'"{flutter_bat}" doctor', shell=True)
-            
-        flutter_cmd = f'"{flutter_bat}"'
-        print(f"✅ Flutter is now available at {flutter_bat}")
-
-    print("\n📦 Step 4: Installing Aegis App via Flutter...")
+    print("\n📦 Step 4: Installing Aegis Kotlin App via Gradle...")
     print("Building and deploying APK to your mobile device. This may take a few minutes...")
     
-    run_app_cmd = f"{flutter_cmd} run -d {device_id}"
+    # Run gradle build and installDebug targetting our connected device
+    # adb command is used to select the specific device if multiple are attached
+    os.environ["ANDROID_SERIAL"] = device_id
+    build_cmd = f"\"{gradlew_bat}\" installDebug"
     
-    print(f"\n> Running: {run_app_cmd} in {frontend_dir}")
+    print(f"\n> Running: {build_cmd} in {frontend_dir}")
     try:
-        subprocess.run(run_app_cmd, shell=True, cwd=frontend_dir)
+        success = run_command(build_cmd, cwd=frontend_dir)
+        if not success:
+            print("❌ ERROR: Gradle build or installation failed.")
+            sys.exit(1)
+            
+        print("\n🚀 Step 5: Launching Aegis App on Device...")
+        launch_cmd = f"adb -s {device_id} shell am start -n com.aegis.scamfirewall/.MainActivity"
+        run_command(launch_cmd)
+        
     except KeyboardInterrupt:
         print("\nDeployment stopped by user.")
         
