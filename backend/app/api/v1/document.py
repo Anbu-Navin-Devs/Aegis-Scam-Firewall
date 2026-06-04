@@ -108,13 +108,13 @@ async def scan_document(
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> DocumentAnalysisResponse:
     """
-    Validate the upload, read its bytes, and forward to the Gemini
-    document analysis service.
+    Validate the upload, read its bytes, and forward to the NVIDIA Llama
+    Vision document analysis service.
 
     Raises:
         HTTPException 400 — empty file, unsupported content type.
         HTTPException 413 — file exceeds the 20 MB size limit.
-        HTTPException 500 — Gemini service call failed.
+        HTTPException 500 — NVIDIA Vision service call failed.
     """
 
     # -- MIME-type resolution ------------------------------------------------
