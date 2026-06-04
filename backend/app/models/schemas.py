@@ -6,7 +6,7 @@ These models ensure type safety and automatic API documentation.
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class IntentRequest(BaseModel):
@@ -49,14 +49,13 @@ class IntentResponse(BaseModel):
         description="Detailed explanation of the classification decision, including detected psychological tactics"
     )
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "is_scam": True,
-                "scam_score": 95,
-                "reason": "High-pressure urgency tactics detected: mentions immediate payment, threatens legal action, impersonates authority figure (IRS). Classic social engineering pattern."
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "is_scam": True,
+            "scam_score": 95,
+            "reason": "High-pressure urgency tactics detected: mentions immediate payment, threatens legal action, impersonates authority figure (IRS). Classic social engineering pattern."
         }
+    })
 
 
 # ---------------------------------------------------------------------------
@@ -89,18 +88,17 @@ class DeepfakeResponse(BaseModel):
         description="Detailed breakdown of the acoustic features analysed and why the verdict was reached"
     )
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "is_deepfake": True,
-                "confidence_score": 78.5,
-                "analysis_details": (
-                    "Spectral flatness is abnormally uniform (0.92) suggesting synthesised speech. "
-                    "Pitch variability is very low (std=4.1 Hz) indicating monotone delivery typical of TTS. "
-                    "Silence ratio is 0.03, unusually low for natural conversation."
-                )
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "is_deepfake": True,
+            "confidence_score": 78.5,
+            "analysis_details": (
+                "Spectral flatness is abnormally uniform (0.92) suggesting synthesised speech. "
+                "Pitch variability is very low (std=4.1 Hz) indicating monotone delivery typical of TTS. "
+                "Silence ratio is 0.03, unusually low for natural conversation."
+            )
         }
+    })
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +124,7 @@ class DocumentAnalysisResponse(BaseModel):
     """
     Response model for document predatory-clause detection.
 
-    Returned by ``POST /api/v1/document/scan`` after Gemini Vision
+    Returned by ``POST /api/v1/document/scan`` after NVIDIA Llama Vision
     analyses the uploaded PDF, PNG, or JPEG for hidden or unfair legal
     language.
     """
@@ -155,22 +153,21 @@ class DocumentAnalysisResponse(BaseModel):
         ),
     )
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "risk_level": "HIGH",
-                "flagged_clauses": [
-                    "Section 4.2: Auto-renewal clause hidden in fine print — subscription renews annually at full price unless cancelled 90 days in advance.",
-                    "Section 7.1: Mandatory binding arbitration waiver prevents any class-action lawsuit against the company.",
-                    "Section 9.3: Company retains the right to sell user data to 'affiliated third parties' without individual consent.",
-                    "Section 12: Liquidated damages clause charges 150% of remaining contract value upon early termination.",
-                ],
-                "summary": (
-                    "This contract contains four HIGH-risk clauses. The auto-renewal and liquidated "
-                    "damages terms create significant financial liability, while the arbitration waiver "
-                    "removes your right to collective legal action. The data-sharing clause is vague "
-                    "and grants broad third-party access rights. Legal review is strongly recommended "
-                    "before signing."
-                ),
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "risk_level": "HIGH",
+            "flagged_clauses": [
+                "Section 4.2: Auto-renewal clause hidden in fine print — subscription renews annually at full price unless cancelled 90 days in advance.",
+                "Section 7.1: Mandatory binding arbitration waiver prevents any class-action lawsuit against the company.",
+                "Section 9.3: Company retains the right to sell user data to 'affiliated third parties' without individual consent.",
+                "Section 12: Liquidated damages clause charges 150% of remaining contract value upon early termination.",
+            ],
+            "summary": (
+                "This contract contains four HIGH-risk clauses. The auto-renewal and liquidated "
+                "damages terms create significant financial liability, while the arbitration waiver "
+                "removes your right to collective legal action. The data-sharing clause is vague "
+                "and grants broad third-party access rights. Legal review is strongly recommended "
+                "before signing."
+            ),
         }
+    })

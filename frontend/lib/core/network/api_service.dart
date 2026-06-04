@@ -51,8 +51,8 @@ class ApiService {
     
     if (data is List) {
       return data.map((json) => ThreatLog.fromJson(json as Map<String, dynamic>)).toList();
-    } else if (data is Map<String, dynamic> && data['data'] != null) {
-      return (data['data'] as List).map((json) => ThreatLog.fromJson(json as Map<String, dynamic>)).toList();
+    } else if (data is Map<String, dynamic> && data['logs'] != null) {
+      return (data['logs'] as List).map((json) => ThreatLog.fromJson(json as Map<String, dynamic>)).toList();
     }
     
     return [];

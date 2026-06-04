@@ -39,7 +39,7 @@ async def _persist_intent_log(log_data: dict) -> None:
     try:
         async with AsyncSessionLocal() as db:
             await create_threat_log(db, log_data)
-    except SQLAlchemyError as exc:
+    except Exception as exc:
         logger.error("Failed to persist intent threat log: %s", exc)
 
 

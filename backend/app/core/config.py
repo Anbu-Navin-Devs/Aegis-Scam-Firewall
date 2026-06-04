@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # NVIDIA NIM API Configuration
     NVIDIA_API_KEY: str
 
+    # Aegis Application API Key for client authorization (optional, empty means disabled)
+    AEGIS_API_KEY: str = ""
+
     # PostgreSQL — must use the postgresql+asyncpg:// scheme for async engine.
     # ⚠️ Override in .env; the default targets a local dev database.
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/aegis"
