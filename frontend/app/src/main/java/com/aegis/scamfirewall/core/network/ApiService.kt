@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.IOException
 
@@ -64,7 +65,7 @@ class ApiService {
             .addFormDataPart(
                 "file",
                 file.name,
-                RequestBody.create(mediaType, file)
+                file.asRequestBody(mediaType)
             )
             .build()
 

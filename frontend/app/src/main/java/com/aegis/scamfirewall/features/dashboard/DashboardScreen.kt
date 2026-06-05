@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Mic
-import androidx.compose.material.icons.rounded.TextSnippet
+import androidx.compose.material.icons.automirrored.rounded.TextSnippet
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,7 +59,7 @@ fun DashboardScreen(
                     FeatureCard(
                         title = "Intent Analysis",
                         description = "Analyze messages and detect malicious intent.",
-                        icon = Icons.Rounded.TextSnippet,
+                        icon = Icons.AutoMirrored.Rounded.TextSnippet,
                         accentColor = PrimaryBlue,
                         onClick = { onNavigate("intent") }
                     )

@@ -7,8 +7,8 @@ object AppConfig {
     private const val DEV_IP = "172.16.0.124"
     private const val DEV_PORT = "8000"
 
-    const val devBaseUrl = if (USE_EMULATOR) "http://10.0.2.2:$DEV_PORT" else "http://$DEV_IP:$DEV_PORT"
-    const val devWsUrl = if (USE_EMULATOR) "ws://10.0.2.2:$DEV_PORT" else "ws://$DEV_IP:$DEV_PORT"
+    val devBaseUrl = if (USE_EMULATOR) "http://10.0.2.2:$DEV_PORT" else "http://$DEV_IP:$DEV_PORT"
+    val devWsUrl = if (USE_EMULATOR) "ws://10.0.2.2:$DEV_PORT" else "ws://$DEV_IP:$DEV_PORT"
 
     const val prodBaseUrl = "https://api.aegisfirewall.com"
     const val prodWsUrl = "wss://api.aegisfirewall.com"
