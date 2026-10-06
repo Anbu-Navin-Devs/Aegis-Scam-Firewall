@@ -113,3 +113,35 @@ def test_history_endpoint_authorized(mock_count, mock_get):
         assert "logs" in data
         assert data["total"] == 0
         assert isinstance(data["logs"], list)
+
+
+def test_ml_intent_endpoint():
+    """Verify trained ML endpoint classifies text without requiring cloud LLM."""
+    with patch.object(settings, "AEGIS_API_KEY", ""):
+        payload = {"transcript": "URGENT: Your Bank of America account is locked. Verify immediately."}
+        response = client.post("/api/v1/analyze/ml-intent", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert "is_scam" in data
+        assert "scam_score" in data
+        assert data["is_scam"] is True
+        assert data["scam_score"] >= 50
+
+
+def test_threat_fusion_endpoint():
+    """Verify threat fusion correlates voice + text signals and delivers countermeasures."""
+    with patch.object(settings, "AEGIS_API_KEY", ""):
+        payload = {
+            "transcript": "URGENT: IRS warrant issued. Pay with gift cards immediately.",
+            "voice_deepfake_confidence": 0.85,
+            "sender_or_caller": "+18005550199",
+        }
+        response = client.post("/api/v1/analyze/fusion", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_scam"] is True
+        assert data["threat_level"] in ["CRITICAL", "HIGH"]
+        assert len(data["tactical_countermeasures"]) >= 1
+        assert "CYBERCRIME INCIDENT TELEMETRY REPORT" in data["cybercrime_report_snippet"]
+
+

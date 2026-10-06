@@ -25,6 +25,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val initialRoute = intent.getStringExtra("route") ?: "dashboard"
+        val initialTranscript = intent.getStringExtra("transcript") ?: ""
+
         setContent {
             AegisTheme {
                 Surface(
@@ -32,7 +35,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "dashboard") {
+                    NavHost(navController = navController, startDestination = initialRoute) {
                         composable("dashboard") {
                             DashboardScreen(
                                 onNavigate = { route -> navController.navigate(route) }
@@ -41,6 +44,7 @@ class MainActivity : ComponentActivity() {
                         composable("intent") {
                             IntentScreen(
                                 apiService = apiService,
+                                initialTranscript = initialTranscript,
                                 onBack = { navController.popBackStack() }
                             )
                         }

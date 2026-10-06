@@ -1,111 +1,106 @@
 # Professional Architecture Overview: Aegis Backend
 
-This document outlines the current state of the backend architecture for **Aegis: The Cognitive Scam Firewall**, designed for seamless handoff between AI/Backend and Frontend development teams.
+This document outlines the architecture and API specifications of the **Aegis Scam Firewall Backend**, designed for seamless interoperability between Backend, Machine Learning, and Android Mobile engineering teams.
 
 ---
 
-## 📂 Current File Structure
+## 📂 File Structure
 
-The backend employs a modular `FastAPI` structure optimized for microservice scalability and separation of concerns.
+The backend employs an async `FastAPI` modular architecture optimized for high-concurrency microservices, sub-millisecond local ML inference, and streaming WebSockets:
 
 ```text
 backend/
 ├── app/
 │   ├── api/
 │   │   └── v1/
-│   │       ├── analyze.py        # Intent analysis endpoints
-│   │       ├── deepfake.py       # Audio deepfake detection endpoints
-│   │       ├── document.py       # Document/PDF scanning endpoints
+│   │       ├── analyze.py        # /intent (LLM), /ml-intent (ML), /fusion (Threat Fusion)
+│   │       ├── deepfake.py       # Audio deepfake file upload endpoints
+│   │       ├── document.py       # PDF/image document scanning endpoints
 │   │       ├── history.py        # Threat history log endpoints
-│   │       └── live_audio.py     # Real-time WebSocket audio stream
+│   │       └── live_audio.py     # Real-time WebSocket audio stream (/ws/live-audio)
 │   ├── core/
-│   │   └── config.py             # Pydantic Settings (.env loader)
+│   │   └── config.py             # Pydantic Settings (.env loader & NVIDIA config)
 │   ├── crud/
 │   │   └── crud_threat.py        # Database CRUD operations
 │   ├── db/
-│   │   └── database.py           # Async SQLAlchemy engine & session
+│   │   └── database.py           # Async SQLAlchemy engine & session manager
 │   ├── models/
-│   │   ├── db_models.py          # SQLAlchemy ORM models
+│   │   ├── db_models.py          # SQLAlchemy ORM models (ThreatLog)
 │   │   └── schemas.py            # Pydantic validation schemas
 │   ├── services/
-│   │   ├── audio_service.py      # Core audio feature extraction
-│   │   └── nvidia_service.py     # NVIDIA NIM LLM integration
-│   └── main.py                   # FastAPI app entry point
-├── .env                          # Environment variables (git-ignored)
-├── .env.example                  # Environment template
-├── README.md                     # Backend-specific readme
-└── requirements.txt              # Python dependencies
+│   │   ├── audio_service.py      # Core DSP feature extraction (librosa)
+│   │   └── nvidia_service.py     # NVIDIA NIM LLM integration (Llama 3.3 / 3.2)
+│   └── main.py                   # FastAPI app entry point & CORS configuration
+├── models_saved/
+│   └── scam_classifier_model.joblib # Trained TF-IDF + Naive Bayes/SVM model
+├── tests/
+│   ├── conftest.py               # Test configuration & mock credentials
+│   └── test_endpoints.py         # 9/9 passing automated pytest test suite
+├── .env                          # Local environment variables
+├── .env.example                  # Template configuration
+├── Dockerfile                    # Production container specification
+├── requirements.txt              # Python dependencies
+└── train_ml_model.py             # Automated ML training and benchmark pipeline
 ```
 
 ---
 
-## ⚙️ Logic Mapping
+## ⚙️ Module Responsibilities
 
-A summary of exactly what the existing Python modules are doing:
-
-- **`main.py`**: The heart of the application. It initializes the FastAPI instance, configures global CORS middleware, creates a `/health` endpoint for uptime monitoring, and registers all `/api/v1` routers. Uses async lifespan for DB schema creation on startup.
-- **`api/v1/analyze.py`**: Exposes the REST route receiving transcription text (from SMS or calls) and passes them to the NVIDIA NIM Llama 3.3 engine to determine if the message is a scam.
-- **`api/v1/deepfake.py`**: Exposes the REST routes responsible for receiving audio samples and passing them into the audio analysis pipeline.
-- **`api/v1/document.py`**: Handles PDF/image uploads for predatory clause detection. Converts PDFs to images via PyMuPDF for vision-based analysis.
-- **`api/v1/history.py`**: Provides GET endpoints for querying persisted threat logs from the database.
-- **`api/v1/live_audio.py`**: WebSocket endpoint for real-time audio streaming and deepfake detection during live calls.
-- **`models/schemas.py`**: Defines strict Pydantic objects (`IntentRequest`, `IntentResponse`, `DeepfakeResponse`, `DocumentAnalysisResponse`). These ensure that requests from the Flutter app are strictly typed and automatically generate the Swagger UI documentation.
-- **`services/audio_service.py`**: Contains the mathematical and ML logic for analyzing audio liveness (extracting spectral flatness, silence ratios, and pitch variations) to detect text-to-speech synthesis.
-- **`services/nvidia_service.py`**: Wraps the NVIDIA NIM API (via OpenAI-compatible client) to power both the NLP intent analysis engine (Llama 3.3 70B) and the document vision analysis (Llama 3.2 11B Vision).
-
----
-
-## 🌉 Integration Status
-
-### ✅ Completed
-1. **WebSocket Integration for Real-Time Audio** — `live_audio.py` provides a WebSocket endpoint for continuous audio chunk streaming.
-2. **Data Persistence (ORM)** — SQLAlchemy async models and CRUD layer implemented for threat log persistence.
-3. **Document Scanning** — PDF-to-image conversion via PyMuPDF with vision-model analysis for predatory clause detection.
-4. **NVIDIA NIM Migration** — Full migration from Google Gemini to NVIDIA NIM (Llama 3.3 + Llama 3.2 Vision).
-
-### ⚠️ Known Limitations
-1. **CORS Policy** — Currently set to `allow_origins=["*"]` for development. Must be restricted for production.
-2. **Database** — Requires a running PostgreSQL instance. Background task logging will silently fail without one.
+- **`main.py`**: Initializes the FastAPI instance, attaches CORS middleware, provides `/health` monitoring, and mounts all `/api/v1` routers with optional `X-API-Key` authentication.
+- **`api/v1/analyze.py`**:
+  - `POST /api/v1/analyze/intent`: Performs cognitive social engineering analysis using NVIDIA NIM (Llama 3.3 70B).
+  - `POST /api/v1/analyze/ml-intent`: Sub-millisecond text classification (<1ms) using the pre-trained TF-IDF + Naive Bayes pipeline (98.31% accuracy).
+  - `POST /api/v1/analyze/fusion`: Correlates multimodal threat signals (voice liveness + text intent + sender info), generates victim tactical countermeasure scripts, and produces standardized legal Cybercrime Reports (FTC / IC3 / 1930).
+- **`api/v1/deepfake.py`**: Analyzes uploaded audio files for vocoder uniformity, pitch flattening, and synthetic silence patterns.
+- **`api/v1/document.py`**: Converts contracts and loan agreements to images via PyMuPDF and audits for predatory clauses using Llama 3.2 11B Vision.
+- **`api/v1/history.py`**: Paginated retrieval of persistent threat logs.
+- **`api/v1/live_audio.py`**: Handles low-latency binary PCM audio streams via WebSocket (`/ws/live-audio`).
+- **`services/audio_service.py`**: Math and DSP engine for Wiener spectral flatness, pitch variability ($F_0$), and silence ratios.
+- **`train_ml_model.py`**: Script that downloads the UCI SMS Spam benchmark (5,619 samples), trains Naive Bayes, LinearSVM, Logistic Regression, and Random Forest, and serializes the best pipeline.
 
 ---
 
 ## 📡 Available API Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/health` | System health check |
-| `GET` | `/docs` | Interactive Swagger UI |
-| `POST` | `/api/v1/analyze/intent` | Scam intent analysis |
-| `POST` | `/api/v1/deepfake/analyze` | Audio deepfake detection |
-| `POST` | `/api/v1/document/scan` | Document/PDF scanning |
-| `GET` | `/api/v1/history/logs` | Threat history logs |
-| `WS` | `/api/v1/live-audio/stream` | Real-time audio WebSocket |
+| Method | Path | Response Type | Description |
+|---|---|---|---|
+| `GET` | `/health` | JSON | System status & service readiness |
+| `GET` | `/docs` | OpenAPI UI | Interactive Swagger documentation |
+| `POST` | `/api/v1/analyze/intent` | `IntentResponse` | Cognitive LLM analysis (Llama 3.3 70B) |
+| `POST` | `/api/v1/analyze/ml-intent` | `IntentResponse` | Ultra-fast trained ML text classification (<1ms) |
+| `POST` | `/api/v1/analyze/fusion` | `ThreatFusionResponse` | Multimodal threat fusion & victim countermeasure scripts |
+| `POST` | `/api/v1/analyze/audio` | `DeepfakeResponse` | Audio file upload deepfake detection |
+| `POST` | `/api/v1/scan/document` | `DocumentAnalysisResponse`| Predatory clause detection in PDF / image |
+| `GET` | `/api/v1/history/logs` | `ThreatHistoryResponse`| Paginated threat log retrieval |
+| `WS` | `/ws/live-audio` | Streaming JSON | Real-time WebSocket binary PCM stream |
 
 ---
 
-## 🤝 Developer Contract (Response JSON)
+## 🤝 Multimodal Threat Fusion Contract (`POST /api/v1/analyze/fusion`)
 
-The following JSON schema represents the target "Developer Contract". This is the exact payload the FastAPI backend sends to the Flutter frontend when querying a combined **Threat Report**.
-
+### Request Payload:
 ```json
 {
-  "status": "success",
-  "request_id": "req-98x4-ae32-11ef",
-  "timestamp": "2026-04-13T16:30:00Z",
-  "threat_report": {
-    "is_scam_active": true,
-    "combined_risk_score": 88.5,
-    "intent_analysis": {
-      "is_malicious": true,
-      "confidence": 92.0,
-      "reason": "High-pressure urgency tactics detected: impersonates the IRS and demands immediate payment."
-    },
-    "audio_analysis": {
-      "is_deepfake": true,
-      "confidence": 85.0,
-      "details": "Spectral flatness is abnormally uniform (0.92) suggesting typical TTS synthesised speech."
-    },
-    "recommended_action": "BLOCK_CALLER"
-  }
+  "transcript": "URGENT: IRS warrant issued. Pay with gift cards immediately.",
+  "voice_deepfake_confidence": 0.85,
+  "sender_or_caller": "+18005550199"
+}
+```
+
+### Response Payload:
+```json
+{
+  "composite_risk_score": 98,
+  "threat_level": "CRITICAL",
+  "is_scam": true,
+  "primary_threat_vector": "Multimodal AI Voice Impersonation & Financial Extortion",
+  "tactical_countermeasures": [
+    "🚨 VOICE INTEGRITY ALERT: The caller's voice exhibits abnormal acoustic uniformity (synthetic AI). Ask a personal 'challenge question' only the real person would know.",
+    "Hang up immediately and call the individual or family member back using your saved phone number.",
+    "⚖️ LEGAL PROTOCOL: Federal agencies send official notifications via certified mail, never via urgent phone demands or gift card payments.",
+    "🛑 EXTORTION PROTOCOL: Demands for payment in gift cards, crypto, or money wire are 100% fraudulent. Terminate communication immediately."
+  ],
+  "cybercrime_report_snippet": "--- CYBERCRIME INCIDENT TELEMETRY REPORT ---\nTimestamp: 2026-09-02 13:30:00 UTC\nReported Suspect / Source: +18005550199\nThreat Classification: CRITICAL (Risk Score: 98/100)\nPrimary Vector: Multimodal AI Voice Impersonation & Financial Extortion\nAcoustic Deepfake Probability: 85%\nTranscript Telemetry: \"URGENT: IRS warrant issued. Pay with gift cards immediately.\"\nSummary: Automated interception by Aegis Scam Firewall. Threat indicators matched coordinated social engineering protocols.\nReady for submission to: FTC (reportfraud.ftc.gov) / IC3 (ic3.gov) / Cybercrime Portal (1930)"
 }
 ```

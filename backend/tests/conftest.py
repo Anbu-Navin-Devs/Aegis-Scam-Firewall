@@ -10,3 +10,8 @@ import sys
 
 # Ensure the backend root is on the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# Set test environment defaults
+os.environ.setdefault("NVIDIA_API_KEY", "nvapi-test-mock-key")
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/aegis_test")
+

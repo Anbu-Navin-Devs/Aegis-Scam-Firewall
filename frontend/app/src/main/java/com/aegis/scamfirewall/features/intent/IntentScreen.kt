@@ -25,9 +25,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun IntentScreen(
     apiService: ApiService,
+    initialTranscript: String = "",
     onBack: () -> Unit
 ) {
-    var transcript by remember { mutableStateOf("") }
+    var transcript by remember { mutableStateOf(initialTranscript) }
     var isLoading by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<IntentResponse?>(null) }
     var error by remember { mutableStateOf<String?>(null) }

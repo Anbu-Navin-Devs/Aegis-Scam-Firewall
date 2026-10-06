@@ -171,3 +171,61 @@ class DocumentAnalysisResponse(BaseModel):
             ),
         }
     })
+
+
+# ---------------------------------------------------------------------------
+# Part 5 — Multimodal Threat Fusion & Tactical Countermeasures
+# ---------------------------------------------------------------------------
+
+
+class ThreatFusionRequest(BaseModel):
+    """
+    Request model for fusing multiple threat signals (text message, voice audio, sender info).
+    """
+    transcript: str = Field(
+        default="",
+        description="Text content (SMS or transcribed call audio) to analyze"
+    )
+    voice_deepfake_confidence: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score (0.0 to 1.0) of synthetic speech detected on the call"
+    )
+    sender_or_caller: str = Field(
+        default="Unknown",
+        description="Phone number, email, or sender ID"
+    )
+
+
+class ThreatFusionResponse(BaseModel):
+    """
+    Unified multimodal threat verdict with victim countermeasures and legal evidence export.
+    """
+    composite_risk_score: int = Field(
+        ...,
+        ge=0,
+        le=100,
+        description="Fused threat score (0-100) combining voice liveness, NLP intent, and link heuristics"
+    )
+    threat_level: str = Field(
+        ...,
+        description="CRITICAL, HIGH, MEDIUM, or SAFE"
+    )
+    is_scam: bool = Field(
+        ...,
+        description="True if composite risk warrants immediate blocking"
+    )
+    primary_threat_vector: str = Field(
+        ...,
+        description="Primary attack category (e.g. Synthetic Voice Impersonation, Financial Smishing)"
+    )
+    tactical_countermeasures: List[str] = Field(
+        ...,
+        description="Immediate actions and verbal scripts for the victim to neutralize the scammer"
+    )
+    cybercrime_report_snippet: str = Field(
+        ...,
+        description="Standardized legal evidence summary ready to file with FTC / IC3 / Cybercrime police"
+    )
+

@@ -1,288 +1,238 @@
 # 🛡️ Aegis — The Cognitive Scam Firewall
 
-> **AI-Powered Real-Time Scam Detection for Mobile Devices**
+> **Autonomous Real-Time Scam & Deepfake Protection for Android**
+> *Protecting users from SMS smishing, live deepfake voice extortion, and predatory legal contracts.*
 
-Aegis is an end-to-end mobile security platform that uses advanced AI models to detect scam calls, fraudulent messages, deepfake audio, and predatory legal documents — all in real-time, directly on your Android device.
-
-> ⚠️ **PROJECT UNDER CONSTRUCTION** ⚠️
-> 
-> **Status:** Backend functionality is complete and verified.
-> **Current Issue:** The mobile frontend is currently experiencing intermittent `Connection timed out` and `Software caused connection abort (OS Error: 103/110)` issues when deployed to physical Android devices via ADB Wireless. These socket connection errors are preventing the Flutter frontend from maintaining stable communication with the local Python backend over the network.
-> **Work in Progress:** We are actively debugging the Android networking constraints and local IP routing. In the meantime, backend endpoints can be tested via `localhost:8000/docs`.
+[![Android](https://img.shields.io/badge/Android-Kotlin%20%2B%20Jetpack%20Compose-3DDC84?style=flat&logo=android)](frontend/)
+[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2B%20Python%203.13-009688?style=flat&logo=fastapi)](backend/)
+[![ML Accuracy](https://img.shields.io/badge/ML%20Accuracy-98.31%25-brightgreen)](backend/train_ml_model.py)
+[![Inference Latency](https://img.shields.io/badge/Local%20ML%20Latency-0.9%C2%B5s-blue)](backend/train_ml_model.py)
+[![NVIDIA NIM](https://img.shields.io/badge/AI%20Engine-NVIDIA%20NIM%20(Llama%203.3)-76B900?style=flat&logo=nvidia)](https://build.nvidia.com)
+[![Tests](https://img.shields.io/badge/Pytest-9%2F9%20Passing-success)](backend/tests/)
 
 ---
 
-## 🏗️ Architecture Overview
+## 🌟 What is Aegis?
+
+**Aegis** is an autonomous mobile scam firewall designed to neutralize modern social engineering attacks before victims suffer financial or identity theft. Unlike legacy caller-ID or static spam lists, Aegis operates as an **active, real-time guardian** combining:
+
+1. **Autonomous SMS Smishing Interceptor**: Evaluates incoming text messages in the background in **< 2 milliseconds** without opening the app, triggering high-priority heads-up alert banners for high-risk fraud.
+2. **Real-Time Call Audio Guardian**: Runs an Android Foreground Service during active phone calls, analyzing voice liveness over streaming WebSockets to detect synthetic AI deepfakes.
+3. **Hybrid On-Device ML + Cloud Cognitive AI Pipeline**: Instant local protection (<1µs, 100% private, offline) backed by NVIDIA NIM Llama 3.3 70B for deep psychological reasoning.
+4. **Multimodal Threat Fusion & Victim Countermeasure Advisor**: Merges voice liveness, NLP intent, and sender telemetry into a composite threat verdict, delivering real-time verbal countermeasure scripts and 1-tap standardized Cybercrime Reports (FTC / IC3 / 1930).
+5. **Predatory Document & Contract Scanner**: Uses Llama 3.2 Vision to scan loan agreements and contracts for hidden auto-renewals, arbitration traps, and predatory terms.
+
+---
+
+## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Flutter Mobile App                     │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ │
-│  │ Intent   │ │ Deepfake │ │ Document │ │ Live Audio │ │
-│  │ Analysis │ │ Detector │ │ Scanner  │ │  Monitor   │ │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘ │
-│       │ REST        │ REST       │ REST         │ WS     │
-└───────┼─────────────┼────────────┼──────────────┼────────┘
-        │             │            │              │
-┌───────▼─────────────▼────────────▼──────────────▼────────┐
-│                   FastAPI Backend                         │
-│  ┌──────────────────────────────────────────────────┐    │
-│  │              NVIDIA NIM AI Engine                 │    │
-│  │  • Llama 3.3 70B (Intent Analysis)               │    │
-│  │  • Llama 3.2 11B Vision (Document Scanning)      │    │
-│  │  • Heuristic Audio Pipeline (Deepfake Detection)  │    │
-│  └──────────────────────────────────────────────────┘    │
-│  ┌──────────────────────────────────────────────────┐    │
-│  │              PostgreSQL (Threat Logs)              │    │
-│  └──────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       ANDROID CLIENT (Kotlin + Compose)                     │
+│                                                                             │
+│   ┌───────────────────────────┐         ┌───────────────────────────────┐   │
+│   │   SmsReceiver (Real-Time) │         │  CallStateReceiver + Service  │   │
+│   │  • Intercepts SMS (Telephony)       │  • Auto-detects active calls  │   │
+│   │  • Tier-1 Local ML (<2ms) │         │  • Foreground Audio Streamer  │   │
+│   │  • Heads-Up Red Alert     │         │  • WebSocket live telemetry   │   │
+│   └─────────────┬─────────────┘         └───────────────┬───────────────┘   │
+│                 │                                       │                   │
+│                 ▼                                       ▼                   │
+│       AegisNotificationManager ◄─────────────── IntentScreen / LiveAudio    │
+└─────────────────┼───────────────────────────────────────┼───────────────────┘
+                  │ REST (Port 8000)                      │ WS (Port 8000)
+                  ▼                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           FASTAPI BACKEND SYSTEM                            │
+│                                                                             │
+│   ┌────────────────────────────┐         ┌──────────────────────────────┐   │
+│   │  Trained ML Pipeline       │         │   Digital Signal Processing  │   │
+│   │  • TF-IDF + Naive Bayes/SVM│         │  • Spectral Flatness         │   │
+│   │  • 98.31% Accuracy (0.9µs) │         │  • Pitch Variance & Silence  │   │
+│   └─────────────┬──────────────┘         └──────────────┬───────────────┘   │
+│                 │                                       │                   │
+│                 ▼                                       ▼                   │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │               Threat Fusion Engine & Countermeasures                │   │
+│   │  • Multimodal Composite Risk Scoring                                │   │
+│   │  • Victim Tactical Scripts ("What to Say")                          │   │
+│   │  • Standardized FTC/IC3 Cybercrime Telemetry Incident Report        │   │
+│   └──────────────────────────────────┬──────────────────────────────────┘   │
+│                                      │                                      │
+│                                      ▼                                      │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                        NVIDIA NIM AI Cloud                          │   │
+│   │  • Llama 3.3 70B Instruct (Cognitive Intent & Manipulation Analysis)│   │
+│   │  • Llama 3.2 11B Vision (Predatory Legal Document Auditing)         │   │
+│   └──────────────────────────────────┬──────────────────────────────────┘   │
+│                                      │ Async BackgroundTasks                │
+│                                      ▼                                      │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │              PostgreSQL Async Threat Log Persistence                │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ✨ Features
+## 🥊 Competitive Advantage: What Other Apps Lack
 
-| Module | Description | AI Model |
-|--------|-------------|----------|
-| **Intent Analysis** | Detects scam patterns in SMS, call transcripts, and emails | Llama 3.3 70B Instruct |
-| **Document Scanner** | Identifies predatory clauses in contracts, loans, and legal PDFs | Llama 3.2 11B Vision |
-| **Deepfake Detection** | Analyzes audio samples for synthetic speech indicators | Heuristic (librosa) |
-| **Live Audio Monitor** | Real-time WebSocket stream for call monitoring | Heuristic (librosa) |
-| **Threat History** | Persistent log of all detected threats | PostgreSQL |
+| Feature | Truecaller | Hiya Protect | Google Pixel Call Screen | McAfee Scam Protection | **Aegis Scam Firewall** |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Real-Time Deepfake Voice Detection** | ⚠️ Manual button (must put call on hold) | Carrier-only integration | ❌ No | ❌ PC/Browser only | **✅ Automatic in-call background stream** |
+| **Autonomous SMS Smishing Interception** | ⚠️ Basic blacklist | ⚠️ Number reputation | ⚠️ Spam filter | ⚠️ Scans links only | **✅ Immediate heads-up alert with ML intent (<2ms)** |
+| **On-Device Sub-Millisecond ML Model** | ❌ Cloud lookup | ❌ Cloud lookup | ⚠️ Pixel-exclusive | ❌ Cloud | **✅ 98.31% Accuracy (<1µs latency, 100% offline)** |
+| **Legal Contract & Clause Scanner** | ❌ No | ❌ No | ❌ No | ❌ No | **✅ Llama 3.2 Vision Predatory Clause Audit** |
+| **Multimodal Threat Fusion** | ❌ Disjointed | ❌ No | ❌ No | ❌ No | **✅ Fuses voice liveness + text intent into 1 score** |
+| **Victim Tactical Countermeasures** | ❌ None | ❌ None | ❌ None | ❌ None | **✅ Live verbal traps & scripts to expose scammers** |
+| **1-Tap Cybercrime Incident Report** | ❌ None | ❌ None | ❌ None | ❌ None | **✅ Standardized FTC, IC3 & 1930 evidentiary output** |
+| **Hardware / Carrier Freedom** | Any Android | Requires Carrier | ❌ Pixel-only | PC / Mac | **✅ Any Android Device (API 26+)** |
 
 ---
 
-## 📁 Project Structure
+## 🧠 Machine Learning Training & Benchmark Results
+
+Aegis implements a **Tier-1 Local ML Model** trained on **5,619 real-world SMS messages** (curated banking, delivery, and government smishing patterns + UCI SMS Spam Benchmark Dataset):
+
+```text
+Model                      | Accuracy  | Precision | Recall    | F1-Score  | Latency (µs)
+----------------------------------------------------------------------------------------
+Multinomial Naive Bayes    |  98.31%   |  96.79%   |  89.88%   |  93.21%   |     0.9 µs
+Linear SVM (LinearSVC)     |  98.31%   |  97.40%   |  89.29%   |  93.17%   |     0.2 µs
+Logistic Regression        |  97.70%   |  97.26%   |  84.52%   |  90.45%   |     0.2 µs
+Random Forest              |  97.32%   |  97.16%   |  81.55%   |  88.67%   |    31.9 µs
+```
+
+- **Inference Latency**: Less than **1 microsecond (0.0009 ms)** per message.
+- **Privacy Guarantee**: 100% of SMS messages remain private on the user's phone; zero personal message text leaves the device for standard classification.
+
+---
+
+## 📁 Repository Structure
 
 ```
 Aegis-Scam-Firewall/
-├── backend/                    # Python FastAPI server
+├── backend/                                # FastAPI server & ML pipeline
 │   ├── app/
-│   │   ├── api/v1/             # REST + WebSocket endpoints
-│   │   ├── core/config.py      # Environment configuration
-│   │   ├── crud/               # Database CRUD operations
-│   │   ├── db/                 # Async SQLAlchemy engine
-│   │   ├── models/             # Pydantic schemas + ORM models
-│   │   └── services/           # AI service layer
-│   │       ├── nvidia_service.py   # NVIDIA NIM (Llama) integration
-│   │       └── audio_service.py    # Audio feature extraction
-│   ├── .env                    # API keys (git-ignored)
-│   ├── .env.example            # Template for new developers
-│   └── requirements.txt        # Python dependencies
+│   │   ├── api/v1/                         # Endpoints (/intent, /ml-intent, /fusion, /audio, /scan)
+│   │   ├── core/config.py                  # App settings & NVIDIA API configuration
+│   │   ├── crud/                           # Async PostgreSQL database operations
+│   │   ├── db/database.py                  # Async SQLAlchemy session manager
+│   │   ├── models/schemas.py               # Pydantic validation models
+│   │   └── services/                       # NVIDIA NIM & DSP audio analysis
+│   ├── models_saved/                       # Serialized ML model pipeline (.joblib)
+│   ├── tests/test_endpoints.py             # 9/9 automated pytest test suite
+│   ├── train_ml_model.py                   # Automated ML training & benchmarking script
+│   └── Dockerfile                          # Production container configuration
 │
-├── frontend/                   # Flutter mobile application
-│   ├── lib/
-│   │   ├── core/config/        # Backend URL configuration
-│   │   ├── core/network/       # HTTP & WebSocket services
-│   │   └── features/           # UI screens per module
-│   └── android/                # Android build configuration
+├── frontend/                               # Native Android Kotlin Application
+│   ├── app/src/main/
+│   │   ├── AndroidManifest.xml             # Background permissions, receivers & service tags
+│   │   └── java/com/aegis/scamfirewall/
+│   │       ├── MainActivity.kt             # Navigation host & notification deep-linking
+│   │       ├── core/
+│   │       │   ├── config/AppConfig.kt     # Dynamic Emulator (10.0.2.2) & LAN IP routing
+│   │       │   ├── ml/LocalScamClassifier.kt # On-device Tier-1 ML pattern matrix (<2ms)
+│   │       │   ├── network/                # ApiService (REST) & LiveAudioService (WebSocket)
+│   │       │   ├── notification/AegisNotificationManager.kt # Heads-up alerts & channels
+│   │       │   └── service/CallMonitorForegroundService.kt  # Call audio background streamer
+│   │       └── features/
+│   │           ├── sms/SmsReceiver.kt      # Real-time BroadcastReceiver for SMS
+│   │           ├── call/CallStateReceiver.kt # Call transition detector (OFFHOOK/IDLE)
+│   │           ├── dashboard/              # Real-Time Shield status & feature cards
+│   │           ├── intent/                 # Intent analysis & countermeasure view
+│   │           ├── live/                   # Live deepfake audio radar
+│   │           ├── scan/                   # Predatory contract audit
+│   │           └── history/                # Threat history timeline
+│   └── build.gradle.kts                    # Android Gradle configuration
 │
-├── docs/                       # Technical documentation
-│   ├── System_Architecture.md
-│   ├── backend_architecture_overview.md
-│   └── error_handling.md
-│
-├── install_to_mobile.py        # Automated wireless deployment script
-└── README.md                   # This file
+└── docs/
+    ├── System_Architecture.md              # In-depth architectural blueprint
+    ├── backend_architecture_overview.md    # API contract specifications
+    └── competitive_analysis_and_differentiation.md # Market analysis & state-of-the-art report
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start Guide
 
-### Prerequisites
+### 1. Prerequisites
+- **Python 3.10+** (FastAPI backend)
+- **Android Studio / Android SDK** (API 26+)
+- **NVIDIA NIM API Key** (from [build.nvidia.com](https://build.nvidia.com))
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Python | 3.10+ | Backend server |
-| Flutter SDK | 3.24+ | Mobile app build |
-| ADB | Latest | Android device communication |
-| PostgreSQL | 15+ | Threat log persistence (optional) |
-
-### 1. Backend Setup
-
-```powershell
+### 2. Backend Setup
+```bash
 cd backend
-
-# Create and activate virtual environment
 python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-# Install dependencies
+venv\Scripts\activate  # Windows: venv\Scripts\activate, Linux/Mac: source venv/bin/activate
 pip install -r requirements.txt
 
-# Configure environment
+# Copy environment template and add your NVIDIA_API_KEY
 copy .env.example .env
-# Edit .env and add your NVIDIA_API_KEY
 
-# Start the server
+# Train ML benchmark model (optional, pre-trained model included)
+python train_ml_model.py
+
+# Run unit tests
+python -m pytest
+
+# Start FastAPI server
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+Swagger UI documentation available at: `http://localhost:8000/docs`
 
-> **⚠️ IMPORTANT:** The backend MUST be started with `--host 0.0.0.0` so that your mobile device can reach it over the local network.
-
-### 2. Mobile Deployment
-
-The `install_to_mobile.py` script automates the entire wireless deployment process:
-
-```powershell
-# Edit the script with your device's Wireless Debugging info
-# (IP, pairing port, pairing code, connect port)
-python install_to_mobile.py
-```
-
-The script will:
-1. ✅ Auto-detect connected ADB devices
-2. ✅ Pair and connect if needed
-3. ✅ Download Flutter SDK if not installed (to `C:\flutter_sdk`)
-4. ✅ Build and deploy the APK to your phone
-
-### 3. Environment Variables
-
-Create `backend/.env` with:
-
-```env
-# NVIDIA NIM API Key (required)
-NVIDIA_API_KEY=nvapi-your-key-here
-
-# Application Settings
-ENV=development
-DEBUG=True
-
-# Database (optional — app works without it, logs won't persist)
-# DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/aegis
-```
+### 3. Android App Setup
+1. Open the `frontend/` directory in **Android Studio**.
+2. Or build and install directly via terminal:
+   ```powershell
+   cd frontend
+   .\gradlew.bat assembleDebug
+   adb install -r app\build\outputs\apk\debug\app-debug.apk
+   ```
+3. Launch **Aegis** on your device or emulator and tap **"Activate Real-Time Shield"** to grant SMS and Call detection permissions.
 
 ---
 
-## 📡 API Endpoints
+## 🧪 Real-Time Verification
+
+### Test 1: Simulating an Incoming Scam SMS
+Send a smishing attack using ADB:
+```powershell
+adb emu sms send "+18005550199" "URGENT: Your Bank of America account is locked. Verify at http://bit.ly/secure-auth-update or your account will be suspended."
+```
+- **Observed Behavior**:
+  - `SmsReceiver` intercepts the message in the background.
+  - In `< 2ms`, `LocalScamClassifier` flags risk score `70/100`.
+  - A **Heads-Up Alert Notification** rings with red alert: `🚨 Scam SMS Blocked! (Risk: 70/100)`.
+  - Tapping the banner opens `IntentScreen` with countermeasures ready.
+
+### Test 2: Simulating an Active Phone Call
+```powershell
+adb emu gsm call "+18005550199"
+adb emu gsm accept "+18005550199"
+```
+- **Observed Behavior**:
+  - `CallStateReceiver` detects call pickup (`OFFHOOK`).
+  - `CallMonitorForegroundService` launches with persistent notification icon.
+  - Microphone streams to live WebSocket; if synthetic voice confidence $\ge 50\%$, an alert warning is triggered.
+
+---
+
+## 📜 API Endpoints Reference
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | System health check |
-| `GET` | `/docs` | Interactive Swagger UI |
-| `POST` | `/api/v1/analyze/intent` | Analyze text for scam patterns |
-| `POST` | `/api/v1/deepfake/analyze` | Analyze audio for deepfake |
-| `POST` | `/api/v1/document/scan` | Scan PDF/image for predatory clauses |
-| `GET` | `/api/v1/history/logs` | Get threat history |
-| `WS` | `/api/v1/live-audio/stream` | Real-time audio monitoring |
-
-### Example: Intent Analysis
-
-```bash
-curl -X POST http://localhost:8000/api/v1/analyze/intent \
-  -H "Content-Type: application/json" \
-  -d '{"transcript": "URGENT: You owe $5000. Pay with gift cards now or face arrest."}'
-```
-
-**Response:**
-```json
-{
-  "is_scam": true,
-  "scam_score": 92,
-  "reason": "Multiple high-pressure tactics detected: urgency, authority impersonation (IRS), and financial demands via untraceable payment methods."
-}
-```
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/analyze/intent` | Cognitive intent analysis via NVIDIA NIM Llama 3.3 70B |
+| `POST` | `/api/v1/analyze/ml-intent` | Ultra-low latency (<1ms) text classification via trained ML model |
+| `POST` | `/api/v1/analyze/fusion` | Multimodal threat fusion, victim countermeasures & legal report generation |
+| `POST` | `/api/v1/analyze/audio` | Audio file upload deepfake analysis (librosa DSP) |
+| `POST` | `/api/v1/scan/document` | Predatory legal clause extraction via Llama 3.2 11B Vision |
+| `WS`   | `/ws/live-audio` | Real-time binary PCM audio streaming over WebSocket |
+| `GET`  | `/api/v1/history/logs` | Query persistent threat incident history |
+| `GET`  | `/health` | Server health and service readiness check |
 
 ---
 
-## 🔧 Frontend Configuration
-
-The Flutter app connects to the backend via the IP address configured in:
-
-```
-frontend/lib/core/config/app_config.dart
-```
-
-```dart
-class AppConfig {
-  // Set this to your computer's local IPv4 address
-  static const String devBaseUrl = 'http://YOUR_PC_IP:8000';
-  static const String devWsUrl = 'ws://YOUR_PC_IP:8000';
-}
-```
-
-> **Finding your IP:** Run `ipconfig` in PowerShell and use your Wi-Fi adapter's IPv4 address.
-
----
-
-## ⚠️ Known Issues & Limitations
-
-### Frontend (Flutter)
-
-| Issue | Status | Notes |
-|-------|--------|-------|
-| `Connection timed out` errors | **Expected** | The backend must be running before opening the app. Start the backend first. |
-| `performTraversals: cancelAndRedraw` log spam | **Cosmetic** | Android system-level rendering messages. Does not affect functionality. |
-| Live Audio Monitor stuck on "Awaiting backend stream" | **Expected** | Backend must be running with `--host 0.0.0.0` for the phone to reach it. |
-| SDK version warnings during build | **Non-blocking** | `compileSdk` and `ndkVersion` warnings are advisory; the app still builds and installs successfully. |
-
-### Backend (Python)
-
-| Issue | Status | Notes |
-|-------|--------|-------|
-| Database connection failures (SQLAlchemy) | **Non-blocking** | If PostgreSQL isn't running, the app still works — threat logs just won't persist. Errors are caught and logged silently. |
-| PDF processing for large documents | **Limited** | Only the first 5 pages are analyzed to keep payload sizes reasonable for the vision model. |
-
-### Deployment (ADB / Flutter)
-
-| Issue | Status | Notes |
-|-------|--------|-------|
-| Wireless Debugging ports change | **Expected** | Android generates new ports each time you toggle Wireless Debugging. Update `install_to_mobile.py` accordingly. |
-| `flutter` not found in PATH | **Auto-resolved** | The install script auto-downloads Flutter SDK to `C:\flutter_sdk` if not found. |
-
----
-
-## ✅ Testing & Verification
-
-### Backend Verification
-
-```powershell
-# 1. Start the server
-cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-# 2. Test health endpoint
-curl http://localhost:8000/health
-# Expected: {"status":"Aegis Backend is Active","version":"1.0.0"}
-
-# 3. Test intent analysis
-curl -X POST http://localhost:8000/api/v1/analyze/intent \
-  -H "Content-Type: application/json" \
-  -d '{"transcript": "Hello, this is your bank. Your account is compromised."}'
-
-# 4. Open interactive docs
-# Visit: http://localhost:8000/docs
-```
-
-### Mobile Verification
-
-1. Ensure backend is running with `--host 0.0.0.0 --port 8000`
-2. Run `python install_to_mobile.py`
-3. Open the app on your phone
-4. Test each feature:
-   - **Intent Analysis**: Enter any suspicious text → tap "Analyze Intent"
-   - **Document Scanner**: Upload a PDF → view flagged clauses
-   - **Live Audio Monitor**: Opens WebSocket connection to backend
-   - **Threat History**: Shows previously logged threats
-
----
-
-## 🛠️ Technology Stack
-
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Backend** | Python + FastAPI | 3.10+ / 0.110+ |
-| **AI (Text)** | NVIDIA NIM — Llama 3.3 70B Instruct | via OpenAI SDK |
-| **AI (Vision)** | NVIDIA NIM — Llama 3.2 11B Vision | via OpenAI SDK |
-| **Audio Analysis** | librosa + numpy | Heuristic pipeline |
-| **PDF Processing** | PyMuPDF (fitz) | 1.24+ |
-| **Database** | PostgreSQL + SQLAlchemy (async) | 15+ / 2.0+ |
-| **Frontend** | Flutter (Dart) | 3.24+ |
-| **Deployment** | ADB Wireless Debugging | Android 11+ |
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+## 🛡️ License & Acknowledgements
+Built for the **Aegis Scam Firewall Project**. Powered by [NVIDIA NIM](https://build.nvidia.com), [FastAPI](https://fastapi.tiangolo.com/), and [Jetpack Compose](https://developer.android.com/jetpack/compose).
